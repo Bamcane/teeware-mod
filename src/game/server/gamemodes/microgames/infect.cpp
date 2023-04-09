@@ -104,7 +104,7 @@ void MGInfect::Tick()
 	int alive = 0;
 	for (unsigned i=0; i<MAX_CLIENTS-1; i++)
 	{
-		CCharacter *Char = GameServer()->GetPlayerChar(m_humans[i]);
+		CCharacter *Char = GameServer()->GetPlayerChar(i);
 		if (Char)
 		{
 			if(!m_IsInfect[i])
@@ -178,9 +178,13 @@ bool MGInfect::OnWinMicrogame(int client, int winTile)
 		}
 
 		// all twintris win
-		for (unsigned i=0; i<m_humans.size(); i++)
+		for (unsigned i=0; i<MAX_CLIENTS-1; i++)
 		{
-			Controller()->winMicroGame(m_humans[i]);
+			CCharacter *Char = GameServer()->GetPlayerChar(m_infects[i]);
+			if (not Char) continue;
+			if (m_IsInfect[i])
+				continue;
+			Controller()->winMicroGame(i);
 		}
 		
 		return true;
