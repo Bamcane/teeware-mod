@@ -1008,7 +1008,7 @@ void CGameContext::OnClientEnter(int ClientID)
 		// for WarioWare
 		str_copy(m_apPlayers[ClientID]->original_skin, m_apPlayers[ClientID]->m_TeeInfos.m_SkinName, sizeof(m_apPlayers[ClientID]->original_skin));
 		m_apPlayers[ClientID]->original_color = m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor;
-
+		m_apPlayers[ClientID]->original_body_color = m_apPlayers[ClientID]->m_TeeInfos.m_ColorBody;
 		SendChatTarget(ClientID, "TeeWare v1.1 模式由Headshot制作(RemakePower翻译+修改)");
 
 		if(g_Config.m_SvWelcome[0]!=0)
@@ -1706,6 +1706,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			str_copy(pPlayer->original_skin, pPlayer->m_TeeInfos.m_SkinName, sizeof(pPlayer->original_skin));
 			pPlayer->original_color = pPlayer->m_TeeInfos.m_UseCustomColor;
+			pPlayer->original_body_color = pPlayer->m_TeeInfos.m_ColorBody;
 		}
 		else if (MsgID == NETMSGTYPE_CL_EMOTICON && !m_World.m_Paused)
 		{
@@ -2798,6 +2799,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	str_copy(m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName, "itsabot", sizeof(m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName));
 	str_copy(m_apPlayers[MAX_CLIENTS-1]->original_skin, "itsabot", sizeof(m_apPlayers[MAX_CLIENTS-1]->original_skin));
 	m_apPlayers[MAX_CLIENTS-1]->original_color = 0;
+	m_apPlayers[MAX_CLIENTS-1]->original_body_color = 0;
 }
 
 void CGameContext::DeleteTempfile()

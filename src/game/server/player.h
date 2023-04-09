@@ -116,6 +116,7 @@ public:
 	// headbot
 	char original_skin[64];
 	int original_color;
+	int original_body_color;//RemakePower
 	bool m_SetTimerOnSpawn; // if to set timer to m_TimerToSpawn when character spawns
 	float m_TimerToSpawn; // set ddrace timer to this value when character spawns
 	int m_BanFlags; // antibot

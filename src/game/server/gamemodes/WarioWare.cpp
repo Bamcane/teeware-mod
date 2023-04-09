@@ -33,6 +33,7 @@
 
 // bosses
 #include "microgames/passball.h"
+#include "microgames/infect.h"
 #include "microgames/ninjasurvival.h"
 
 
@@ -69,6 +70,7 @@ CGameControllerWarioWare::CGameControllerWarioWare(class CGameContext *pGameServ
 	m_microgames.push_back(new MGReachEndNade1(pGameServer, this));
 	m_microgames.push_back(new MGReachEndNade2(pGameServer, this));
 	m_microgames.push_back(new MGPiggyback(pGameServer, this));
+	m_microgames.push_back(new MGInfect(pGameServer, this));
 }
 
 CGameControllerWarioWare::~CGameControllerWarioWare()
