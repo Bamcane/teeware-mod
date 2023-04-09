@@ -40,6 +40,7 @@ void MGInfect::Start()
 	int bot_tele = 20;
 	int Num = Controller()->m_TeleOuts[bot_tele-1].size();
 
+	Server()->SetClientName(MAX_CLIENTS-1, "感染者");
 	str_copy(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName, "cammo", sizeof(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName));
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_UseCustomColor = 1;
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_ColorBody = 3866368;
@@ -70,7 +71,7 @@ void MGInfect::End()
 		Player->m_TeeInfos.m_ColorBody = Player->original_body_color;
 
 		if (not Char) continue;
-		Char->SetHealth(10);
+		Controller()->teleportPlayerToSpawn(i);
 	}
 	// move bot back to spec
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->SetTeam(TEAM_SPECTATORS, false);
@@ -152,9 +153,11 @@ void MGInfect::Tick()
 					continue;
 				
 				m_IsInfect[ClientID] = true;
+				Player->SetInfoLock(false);
 				str_copy(GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_SkinName, "cammo", sizeof(GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_SkinName));
 				GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor = 1;
 				GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_ColorBody = 3866368;
+				Player->SetInfoLock(true);
 				aEnts[ii]->m_ForcedTuneZone = -1;
 			}
 		}
