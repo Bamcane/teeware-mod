@@ -23,13 +23,13 @@ void MGNinjaSurvival::Start()
 		if (not Char) continue;
 
 		Player->SetInfoLock(true); // prevent skin change
-		if (str_comp_nocase(Server()->ClientName(i), "ninja") == 0) // remove fake
-			Server()->SetClientName(i, "fake");
+		if (str_comp_nocase(Server()->ClientName(i), "忍者") == 0) // remove fake
+			Server()->SetClientName(i, "假的");
 
 		Controller()->g_Complete[i] = (GameServer()->GetPlayerChar(i));
 	}
 
-	GameServer()->SendBroadcast("Survive the ninja!", -1);
+	GameServer()->SendBroadcast("在忍者的攻击下幸存!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgSurvive_Offset, g_Config.m_WwSndMgSurvive_Length);
 }
 

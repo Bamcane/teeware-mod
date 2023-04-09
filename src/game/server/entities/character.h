@@ -292,6 +292,7 @@ public:
 	vec2 GetPos() { return m_Core.m_Pos; }
 	bool IsMoving() { return m_Core.m_Input.m_Direction != 0; }
 	CNetObj_PlayerInput* GetInput() { return &m_Input; }
+	CNetObj_PlayerInput* GetLatestInput() { return &m_LatestInput; }
 	float warioTimeOffset, warioTimeLength;
 };
 

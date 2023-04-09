@@ -53,12 +53,13 @@ void MGSimon::Tick()
 			if (not Char) continue;
 
 			CNetObj_PlayerInput* input = Char->GetInput();
+			CNetObj_PlayerInput* input2 = Char->GetLatestInput();
 			float angle = -atan2(input->m_TargetY, input->m_TargetX) / PI * 180;
 
 			bool objective = (m_SimonMode == 0 and input->m_Jump&1) or // jump
 							 (m_SimonMode == 1 and angle >= 75 and angle < 105) or // up
 							 (m_SimonMode == 2 and angle <= -75 and angle > -105); // down
-							 (m_SimonMode == 3 and input->m_Fire&1 and Char->GetActiveWeapon() == WEAPON_HAMMER); // down
+							 (m_SimonMode == 3 and input2->m_Fire&1 and Char->GetActiveWeapon() == WEAPON_HAMMER); // down
 
 			if (objective)
 			{
@@ -74,7 +75,7 @@ void MGSimon::Tick()
 				{
 					if (m_Someone and m_SimonNegative and m_SimonMode == 0 and input->m_Jump&1)
 						m_SomeoneDontJump[i] = true;
-					if (m_Someone and m_SimonNegative and m_SimonMode == 3 and input->m_Fire&1 and Char->GetActiveWeapon() == WEAPON_HAMMER)
+					if (m_Someone and m_SimonNegative and m_SimonMode == 3 and input2->m_Fire&1 and Char->GetActiveWeapon() == WEAPON_HAMMER)
 						m_SomeoneDontHammer[i] = true;
 					
 					Controller()->winMicroGame(i);
