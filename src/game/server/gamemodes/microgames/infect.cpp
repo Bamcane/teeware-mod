@@ -72,6 +72,7 @@ void MGInfect::End()
 
 		if (not Char) continue;
 		Controller()->teleportPlayerToSpawn(i);
+		Char->m_ForcedTuneZone = -1;
 	}
 }
 
