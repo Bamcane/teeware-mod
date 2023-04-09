@@ -61,6 +61,9 @@ void MGInfect::End()
 	// reset player healths
 	for (int i=0; i<MAX_CLIENTS-1; i++)
 	{
+		if(!Controller()->g_Complete[i])
+			Controller()->killAndLoseMicroGame(i)
+			
 		CPlayer *Player = GameServer()->m_apPlayers[i];
 		CCharacter *Char = (Player) ? Player->GetCharacter() : 0;
 
