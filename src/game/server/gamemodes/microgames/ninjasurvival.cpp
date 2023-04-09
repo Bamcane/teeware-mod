@@ -6,7 +6,7 @@
 
 MGNinjaSurvival::MGNinjaSurvival(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "ninjasurvival";
+	m_microgameName = "忍者生存";
 	m_boss = true;
 }
 
@@ -55,9 +55,23 @@ void MGNinjaSurvival::End()
 
 void MGNinjaSurvival::Tick()
 {
+	for (int i=0; i<MAX_CLIENTS; i++)
+	{
+		CCharacter *Char = GameServer()->GetPlayerChar(i);
+		if (not Char) continue;
+		
+		if(Char->m_Pos.y < 140 * 32.0f)
+		{
+			Char->Die(i, WEAPON_SELF);
+			char aBuf[256];
+			str_format(aBuf, sizeof(aBuf), "%s想要逃脱忍者被制裁了!", Server()->ClientName(i));
+			GameServer()->SendChatTarget(-1, aBuf);
+		}
+	}
+
 	if (Server()->Tick() - m_startTick > 225 and not m_Moved)
 	{
-		Server()->SetClientName(MAX_CLIENTS-1, "Ninja");
+		Server()->SetClientName(MAX_CLIENTS-1, "忍者");
 		GameServer()->m_apPlayers[MAX_CLIENTS-1]->SetTeam(0, false); // move to game
 		m_Moved = true;
 

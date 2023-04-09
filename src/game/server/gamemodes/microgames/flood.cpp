@@ -5,7 +5,7 @@
 
 MGFlood::MGFlood(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "flood";
+	m_microgameName = "核废水";
 	m_boss = false;
 }
 
@@ -22,7 +22,7 @@ void MGFlood::Start()
 		Controller()->teleportPlayer(i, 5);
 	}
 	
-	GameServer()->SendBroadcast("Don't touch the acid!", -1);
+	GameServer()->SendBroadcast("远离核废水!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgGetOnPlatform_Offset, g_Config.m_WwSndMgGetOnPlatform_Length);
 }
 

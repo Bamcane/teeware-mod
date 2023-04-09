@@ -5,13 +5,13 @@
 
 MGHitEnemy::MGHitEnemy(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "hitenemy";
+	m_microgameName = "锤击别人";
 	m_boss = false;
 }
 
 void MGHitEnemy::Start()
 {
-	GameServer()->SendBroadcast("Hit an enemy!", -1);
+	GameServer()->SendBroadcast("锤击别人!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgHitEnemy_Offset, g_Config.m_WwSndMgHitEnemy_Length);
 }
 

@@ -3,17 +3,17 @@
 #include <engine/shared/config.h>
 #include "tilecolors.h"
 
-const char *colorNames[4][5] = {
-	{"RED", "MARIO", "TW GRENADE", "CHERRY", "HEART"},
-	{"GREEN", "GRASS", "LEAF", "CACTUS", "FROG"},
-	{"BLUE", "OCEAN", "WATER", "BLUE", "SONIC"},
-	{"YELLOW", "SUN", "RUBBER DUCKY", "EGG YOLK", "BANANA"}
+const char *colorNames[4][6] = {
+	{"红色", "马里奥", "Tee的榴弹炮", "樱桃", "心脏", "成熟番茄"},
+	{"绿色", "草", "树叶", "这个模式里的核废水", "青蛙", "未成熟番茄"},
+	{"蓝色", "海洋", "水", "蓝", "索尼克", "蓝莓"},
+	{"黄色", "太阳", "鸭子", "蛋黄", "香蕉", "梨"}
 };
 
 
 MGTileColors::MGTileColors(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "tilecolors";
+	m_microgameName = "颜色";
 	m_boss = false;
 }
 
@@ -88,6 +88,6 @@ void MGTileColors::setAndSayColor()
 	m_colorName = rand() % 5;
 
 	char aBuf[128];
-	str_format(aBuf, sizeof(aBuf), "%d.\nGo to the room with the %s color!", m_turn+1, colorNames[m_currColor][m_colorName]);
+	str_format(aBuf, sizeof(aBuf), "%d.\n跑到%s色的房间!", m_turn+1, colorNames[m_currColor][m_colorName]);
 	GameServer()->SendBroadcast(aBuf, -1);
 }

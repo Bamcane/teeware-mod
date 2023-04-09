@@ -4,11 +4,11 @@
 #include "target.h"
 
 const int weapons[4] = { WEAPON_GUN, WEAPON_GRENADE, WEAPON_SHOTGUN, WEAPON_RIFLE };
-const char *weaponNames[4] = { "PISTOL", "GRENADES", "SHOTGUN", "LASER" };
+const char *weaponNames[4] = { "手枪", "榴弹炮", "散弹枪", "激光枪" };
 
 MGTarget::MGTarget(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "target";
+	m_microgameName = "目标";
 	m_boss = false;
 }
 
@@ -34,12 +34,12 @@ void MGTarget::Start()
 	m_UseWeapon = rand() % 4;
 	int bot_tele = 7;
 	int Num = Controller()->m_TeleOuts[bot_tele-1].size();
-	Server()->SetClientName(MAX_CLIENTS-1, "HIT ME");
+	Server()->SetClientName(MAX_CLIENTS-1, "打我");
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->SetTeam(0, false); // move to game
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->ForceSpawn(Controller()->m_TeleOuts[bot_tele-1][(!Num)?Num:rand() % Num]);
 
 	char aBuf[128];
-	str_format(aBuf, sizeof(aBuf), "Hit the target with your %s!", weaponNames[m_UseWeapon]);
+	str_format(aBuf, sizeof(aBuf), "用你的%s射击目标!", weaponNames[m_UseWeapon]);
 	GameServer()->SendBroadcast(aBuf, -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgHitTheTarget_Offset, g_Config.m_WwSndMgHitTheTarget_Length);
 }
@@ -78,7 +78,7 @@ void MGTarget::OnCharacterDamage(int Victim, int Killer, int Dmg, int Weapon)
 		} else {
 			if (!Controller()->g_Complete[Killer]) {
 				Controller()->killAndLoseMicroGame(Killer);
-				GameServer()->SendChatTarget(Killer, "You used the wrong weapon...");
+				GameServer()->SendChatTarget(Killer, "你武器拿错了...");
 			}
 		}
 	}

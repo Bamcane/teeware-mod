@@ -5,7 +5,7 @@
 
 MGBlockFight::MGBlockFight(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "blockfight";
+	m_microgameName = "block战";
 	m_boss = false;
 }
 
@@ -19,7 +19,7 @@ void MGBlockFight::Start()
 		Controller()->teleportPlayer(i, 2);
 	}
 	
-	GameServer()->SendBroadcast("Fight and stay alive!", -1);
+	GameServer()->SendBroadcast("战斗并生存下来!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgFightStayAlive_Offset, g_Config.m_WwSndMgFightStayAlive_Length);
 }
 

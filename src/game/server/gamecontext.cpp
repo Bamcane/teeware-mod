@@ -638,7 +638,7 @@ void CGameContext::OnTick()
 		// abort the kick-vote on player-leave
 		if(m_VoteCloseTime == -1)
 		{
-			SendChat(-1, CGameContext::CHAT_ALL, "Vote aborted");
+			SendChat(-1, CGameContext::CHAT_ALL, "投票中止");
 			EndVote();
 		}
 		else
@@ -733,7 +733,7 @@ void CGameContext::OnTick()
 				Console()->ExecuteLine(m_aVoteCommand);
 				Server()->SetRconCID(IServer::RCON_CID_SERV);
 				EndVote();
-				SendChat(-1, CGameContext::CHAT_ALL, "Vote passed");
+				SendChat(-1, CGameContext::CHAT_ALL, "投票通过");
 
 				if(m_apPlayers[m_VoteCreator])
 					m_apPlayers[m_VoteCreator]->m_LastVoteCall = 0;
@@ -741,7 +741,7 @@ void CGameContext::OnTick()
 			else if(m_VoteEnforce == VOTE_ENFORCE_YES_ADMIN)
 			{
 				char aBuf[64];
-				str_format(aBuf, sizeof(aBuf),"Vote passed enforced by server moderator");
+				str_format(aBuf, sizeof(aBuf),"投票被管理员通过");
 				Console()->ExecuteLine(m_aVoteCommand, m_VoteEnforcer);
 				SendChat(-1, CGameContext::CHAT_ALL, aBuf);
 				EndVote();
@@ -749,7 +749,7 @@ void CGameContext::OnTick()
 			else if(m_VoteEnforce == VOTE_ENFORCE_NO_ADMIN)
 			{
 				char aBuf[64];
-				str_format(aBuf, sizeof(aBuf),"Vote failed enforced by server moderator");
+				str_format(aBuf, sizeof(aBuf),"投票被管理员否决");
 				EndVote();
 				SendChat(-1, CGameContext::CHAT_ALL, aBuf);
 			}
@@ -758,9 +758,9 @@ void CGameContext::OnTick()
 			{
 				EndVote();
 				if(VetoStop || (m_VoteWillPass && Veto))
-					SendChat(-1, CGameContext::CHAT_ALL, "Vote failed because of veto. Find an empty server instead");
+					SendChat(-1, CGameContext::CHAT_ALL, "投票否决，请寻找一个空服务器");
 				else
-					SendChat(-1, CGameContext::CHAT_ALL, "Vote failed");
+					SendChat(-1, CGameContext::CHAT_ALL, "投票否决");
 			}
 			else if(m_VoteUpdate)
 			{
@@ -980,15 +980,15 @@ void CGameContext::OnClientEnter(int ClientID)
 
 		if (controller->getMicroGame()->m_boss)
 		{
-			str_format(abuf, sizeof(abuf), "=== Please wait %d seconds for the boss to end! ===", (int)(timeLeft/1000.f));
-			str_format(abuf2, sizeof(abuf2), "=== Current boss: '%s' ===", controller->getMicroGame()->m_microgameName);
-			SendChatTarget(ClientID, "=== BOSS ROUND IS ON! ===");
+			str_format(abuf, sizeof(abuf), "=== 等待 %d 秒到BOSS战结束 ===", (int)(timeLeft/1000.f));
+			str_format(abuf2, sizeof(abuf2), "=== 当前BOSS战: '%s' ===", controller->getMicroGame()->m_microgameName);
+			SendChatTarget(ClientID, "=== BOSS战已经开启! ===");
 		}
 		else
 		{
-			str_format(abuf, sizeof(abuf), "=== Please wait %d seconds for the microgame to end. ===", (int)(timeLeft/1000.f));
-			str_format(abuf2, sizeof(abuf2), "=== Current microgame: '%s' ===", controller->getMicroGame()->m_microgameName);
-			SendChatTarget(ClientID, "=== Welcome! ===");
+			str_format(abuf, sizeof(abuf), "=== 等待 %d 秒直到当前小游戏结束. ===", (int)(timeLeft/1000.f));
+			str_format(abuf2, sizeof(abuf2), "=== 当前小游戏: '%s' ===", controller->getMicroGame()->m_microgameName);
+			SendChatTarget(ClientID, "=== 欢迎! ===");
 		}
 
 		SendChatTarget(ClientID, abuf);
@@ -1002,28 +1002,20 @@ void CGameContext::OnClientEnter(int ClientID)
 	if(((CServer *) Server())->m_aPrevStates[ClientID] < CServer::CClient::STATE_INGAME)
 	{
 		char aBuf[512];
-		str_format(aBuf, sizeof(aBuf), "'%s' entered and joined the %s", Server()->ClientName(ClientID), m_pController->GetTeamName(m_apPlayers[ClientID]->GetTeam()));
+		str_format(aBuf, sizeof(aBuf), "'%s' 已连接并加入了%s", Server()->ClientName(ClientID), m_pController->GetTeamName(m_apPlayers[ClientID]->GetTeam()));
 		SendChat(-1, CGameContext::CHAT_ALL, aBuf);
 		
 		// for WarioWare
 		str_copy(m_apPlayers[ClientID]->original_skin, m_apPlayers[ClientID]->m_TeeInfos.m_SkinName, sizeof(m_apPlayers[ClientID]->original_skin));
 		m_apPlayers[ClientID]->original_color = m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor;
 
-		SendChatTarget(ClientID, "TeeWare v1.1 mod by Headshot");
+		SendChatTarget(ClientID, "TeeWare v1.1 模式由Headshot制作(RemakePower翻译+修改)");
 
 		if(g_Config.m_SvWelcome[0]!=0)
 			SendChatTarget(ClientID,g_Config.m_SvWelcome);
 		str_format(aBuf, sizeof(aBuf), "team_join player='%d:%s' team=%d", ClientID, Server()->ClientName(ClientID), m_apPlayers[ClientID]->GetTeam());
 
 		Console()->Print(IConsole::OUTPUT_LEVEL_DEBUG, "game", aBuf);
-
-		if (g_Config.m_SvShowOthersDefault)
-		{
-			if (g_Config.m_SvShowOthers)
-				SendChatTarget(ClientID, "You can see other players. To disable this use the DDNet client and type /showothers .");
-
-			m_apPlayers[ClientID]->m_ShowOthers = true;
-		}
 	}
 	m_VoteUpdate = true;
 
@@ -1245,20 +1237,20 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			pPlayer->m_LastVoteTry = Now;
 			if(g_Config.m_SvSpectatorVotes == 0 && pPlayer->GetTeam() == TEAM_SPECTATORS)
 			{
-				SendChatTarget(ClientID, "Spectators aren't allowed to start a vote.");
+				SendChatTarget(ClientID, "旁观者不能发起投票");
 				return;
 			}
 
 			if(m_VoteCloseTime)
 			{
-				SendChatTarget(ClientID, "Wait for current vote to end before calling a new one.");
+				SendChatTarget(ClientID, "等待当前投票结束再发起");
 				return;
 			}
 
 			if(g_Config.m_SvJoinVoteDelay && Now < pPlayer->m_FirstVoteTick)
 			{
 				char aBuf[64];
-				str_format(aBuf, sizeof(aBuf), "You must wait %d seconds before making your first vote", ((pPlayer->m_FirstVoteTick - Now) / TickSpeed) + 1);
+				str_format(aBuf, sizeof(aBuf), "你必须等待%d秒才能提出你第一个投票", ((pPlayer->m_FirstVoteTick - Now) / TickSpeed) + 1);
 				SendChatTarget(ClientID, aBuf);
 				return;
 			}
@@ -1267,7 +1259,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(pPlayer->m_LastVoteCall && TimeLeft > 0)
 			{
 				char aChatmsg[64];
-				str_format(aChatmsg, sizeof(aChatmsg), "You must wait %d seconds before making another vote", (TimeLeft/TickSpeed)+1);
+				str_format(aChatmsg, sizeof(aChatmsg), "你必须等待%d秒才能再次提出投票", (TimeLeft/TickSpeed)+1);
 				SendChatTarget(ClientID, aChatmsg);
 				return;
 			}
@@ -1303,13 +1295,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 						if(!m_apPlayers[ClientID]->m_Authed && (str_comp_num(pOption->m_aCommand, "sv_map ", 7) == 0 || str_comp_num(pOption->m_aCommand, "change_map ", 11) == 0 || str_comp_num(pOption->m_aCommand, "random_map", 10) == 0 || str_comp_num(pOption->m_aCommand, "random_unfinished_map", 21) == 0) && time_get() < m_LastMapVote + (time_freq() * g_Config.m_SvVoteMapTimeDelay))
 						{
 							char chatmsg[512] = {0};
-							str_format(chatmsg, sizeof(chatmsg), "There's a %d second delay between map-votes, please wait %d seconds.", g_Config.m_SvVoteMapTimeDelay,((m_LastMapVote+(g_Config.m_SvVoteMapTimeDelay * time_freq()))/time_freq())-(time_get()/time_freq()));
+							str_format(chatmsg, sizeof(chatmsg), "现在有%d秒的换地图冷却时间， 请每一玩家等待%d秒", g_Config.m_SvVoteMapTimeDelay,((m_LastMapVote+(g_Config.m_SvVoteMapTimeDelay * time_freq()))/time_freq())-(time_get()/time_freq()));
 							SendChatTarget(ClientID, chatmsg);
 
 							return;
 						}
 
-						str_format(aChatmsg, sizeof(aChatmsg), "'%s' called vote to change server option '%s' (%s)", Server()->ClientName(ClientID),
+						str_format(aChatmsg, sizeof(aChatmsg), "'%s' 提议修改服务器选项 '%s' (%s)", Server()->ClientName(ClientID),
 									pOption->m_aDescription, aReason);
 						str_format(aDesc, sizeof(aDesc), "%s", pOption->m_aDescription);
 
@@ -1334,13 +1326,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				{
 					if (pPlayer->m_Authed != CServer::AUTHED_ADMIN)  // allow admins to call any vote they want
 					{
-						str_format(aChatmsg, sizeof(aChatmsg), "'%s' isn't an option on this server", pMsg->m_Value);
+						str_format(aChatmsg, sizeof(aChatmsg), "'%s' 在此服务器上不是一个选项", pMsg->m_Value);
 						SendChatTarget(ClientID, aChatmsg);
 						return;
 					}
 					else
 					{
-						str_format(aChatmsg, sizeof(aChatmsg), "'%s' called vote to change server option '%s'", Server()->ClientName(ClientID), pMsg->m_Value);
+						str_format(aChatmsg, sizeof(aChatmsg), "'%s' 提议修改服务器选项 '%s'", Server()->ClientName(ClientID), pMsg->m_Value);
 						str_format(aDesc, sizeof(aDesc), "%s", pMsg->m_Value);
 						str_format(aCmd, sizeof(aCmd), "%s", pMsg->m_Value);
 					}
@@ -1357,7 +1349,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				else if(!m_apPlayers[ClientID]->m_Authed && time_get() < m_apPlayers[ClientID]->m_Last_KickVote + (time_freq() * g_Config.m_SvVoteKickTimeDelay))
 				{
 					char chatmsg[512] = {0};
-					str_format(chatmsg, sizeof(chatmsg), "There's a %d second wait time between kick votes for each player please wait %d second(s)",
+					str_format(chatmsg, sizeof(chatmsg), "现在有%d秒冷却时间， 请每一玩家等待%d秒",
 					g_Config.m_SvVoteKickTimeDelay,
 					((m_apPlayers[ClientID]->m_Last_KickVote + (m_apPlayers[ClientID]->m_Last_KickVote*time_freq()))/time_freq())-(time_get()/time_freq())
 					);
@@ -1368,7 +1360,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				//else if(!g_Config.m_SvVoteKick)
 				else if(!g_Config.m_SvVoteKick && !pPlayer->m_Authed) // allow admins to call kick votes even if they are forbidden
 				{
-					SendChatTarget(ClientID, "Server does not allow voting to kick players");
+					SendChatTarget(ClientID, "服务器不允许投票踢人");
 					m_apPlayers[ClientID]->m_Last_KickVote = time_get();
 					return;
 				}
@@ -1382,7 +1374,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 					if(PlayerNum < g_Config.m_SvVoteKickMin)
 					{
-						str_format(aChatmsg, sizeof(aChatmsg), "Kick voting requires %d players on the server", g_Config.m_SvVoteKickMin);
+						str_format(aChatmsg, sizeof(aChatmsg), "踢出投票至少需要 %d 名玩家在场", g_Config.m_SvVoteKickMin);
 						SendChatTarget(ClientID, aChatmsg);
 						return;
 					}
@@ -1392,12 +1384,12 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 				if(KickID < 0 || KickID >= MAX_CLIENTS || !m_apPlayers[KickID])
 				{
-					SendChatTarget(ClientID, "Invalid client id to kick");
+					SendChatTarget(ClientID, "无效的需要踢出的客户端ID");
 					return;
 				}
 				if(KickID == ClientID)
 				{
-					SendChatTarget(ClientID, "You can't kick yourself");
+					SendChatTarget(ClientID, "你不能踢出你自己");
 					return;
 				}
 				if (!Server()->ReverseTranslate(KickID, ClientID))
@@ -1407,10 +1399,10 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				//if(Server()->IsAuthed(KickID))
 				if(m_apPlayers[KickID]->m_Authed > 0 && m_apPlayers[KickID]->m_Authed >= pPlayer->m_Authed)
 				{
-					SendChatTarget(ClientID, "You can't kick moderators");
+					SendChatTarget(ClientID, "你不能踢出管理");
 					m_apPlayers[ClientID]->m_Last_KickVote = time_get();
 					char aBufKick[128];
-					str_format(aBufKick, sizeof(aBufKick), "'%s' called for vote to kick you", Server()->ClientName(ClientID));
+					str_format(aBufKick, sizeof(aBufKick), "'%s'提议踢出你", Server()->ClientName(ClientID));
 					SendChatTarget(KickID, aBufKick);
 					return;
 				}
@@ -1418,12 +1410,12 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				// Don't allow kicking if a player has no character
 				if(!GetPlayerChar(ClientID) || !GetPlayerChar(KickID) || GetDDRaceTeam(ClientID) != GetDDRaceTeam(KickID))
 				{
-					SendChatTarget(ClientID, "You can kick only your team member");
+					SendChatTarget(ClientID, "你只能踢出本队伍成员");
 					m_apPlayers[ClientID]->m_Last_KickVote = time_get();
 					return;
 				}
 
-				str_format(aChatmsg, sizeof(aChatmsg), "'%s' called for vote to kick '%s' (%s)", Server()->ClientName(ClientID), Server()->ClientName(KickID), aReason);
+				str_format(aChatmsg, sizeof(aChatmsg), "'%s'提议踢出'%s' (%s)", Server()->ClientName(ClientID), Server()->ClientName(KickID), aReason);
 				str_format(aDesc, sizeof(aDesc), "Kick '%s'", Server()->ClientName(KickID));
 				if (!g_Config.m_SvVoteKickBantime)
 					str_format(aCmd, sizeof(aCmd), "kick %d Kicked by vote", KickID);
@@ -1441,7 +1433,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			{
 				if(!g_Config.m_SvVoteSpectate)
 				{
-					SendChatTarget(ClientID, "Server does not allow voting to move players to spectators");
+					SendChatTarget(ClientID, "服务器不允许移动玩家到旁观");
 					return;
 				}
 
@@ -1449,12 +1441,12 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 				if(SpectateID < 0 || SpectateID >= MAX_CLIENTS || !m_apPlayers[SpectateID] || m_apPlayers[SpectateID]->GetTeam() == TEAM_SPECTATORS)
 				{
-					SendChatTarget(ClientID, "Invalid client id to move");
+					SendChatTarget(ClientID, "无效的需要移动的客户端ID");
 					return;
 				}
 				if(SpectateID == ClientID)
 				{
-					SendChatTarget(ClientID, "You can't move yourself");
+					SendChatTarget(ClientID, "你不能移动你自己");
 					return;
 				}
 				if (!Server()->ReverseTranslate(SpectateID, ClientID))
@@ -1464,19 +1456,19 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 				if(!GetPlayerChar(ClientID) || !GetPlayerChar(SpectateID) || GetDDRaceTeam(ClientID) != GetDDRaceTeam(SpectateID))
 				{
-					SendChatTarget(ClientID, "You can only move your team member to specators");
+					SendChatTarget(ClientID, "你只能移动本队伍成员到旁观");
 					return;
 				}
 
 				if(g_Config.m_SvPauseable && g_Config.m_SvVotePause)
 				{
-					str_format(aChatmsg, sizeof(aChatmsg), "'%s' called for vote to pause '%s' for %d seconds (%s)", Server()->ClientName(ClientID), Server()->ClientName(SpectateID), g_Config.m_SvVotePauseTime, aReason);
+					str_format(aChatmsg, sizeof(aChatmsg), "'%s' 提议不让'%s'继续游玩%d秒(%s)", Server()->ClientName(ClientID), Server()->ClientName(SpectateID), g_Config.m_SvVotePauseTime, aReason);
 					str_format(aDesc, sizeof(aDesc), "Pause '%s' (%ds)", Server()->ClientName(SpectateID), g_Config.m_SvVotePauseTime);
 					str_format(aCmd, sizeof(aCmd), "force_pause %d %d", SpectateID, g_Config.m_SvVotePauseTime);
 				}
 				else
 				{
-					str_format(aChatmsg, sizeof(aChatmsg), "'%s' called for vote to move '%s' to spectators (%s)", Server()->ClientName(ClientID), Server()->ClientName(SpectateID), aReason);
+					str_format(aChatmsg, sizeof(aChatmsg), "'%s' 提议移动玩家 '%s' 到旁观者 (%s)", Server()->ClientName(ClientID), Server()->ClientName(SpectateID), aReason);
 					str_format(aDesc, sizeof(aDesc), "move '%s' to spectators", Server()->ClientName(SpectateID));
 				str_format(aCmd, sizeof(aCmd), "set_team %d -1 %d", SpectateID, g_Config.m_SvVoteSpectateRejoindelay);
 				}
@@ -1529,7 +1521,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				int CurrTime = (Server()->Tick() - pChr->m_StartTime) / Server()->TickSpeed();
 				if(g_Config.m_SvKillProtection != 0 && CurrTime >= (60 * g_Config.m_SvKillProtection) && pChr->m_DDRaceState == DDRACE_STARTED)
 				{
-					SendChatTarget(ClientID, "Kill Protection enabled. If you really want to join the spectators, first type /kill");
+					SendChatTarget(ClientID, "自杀保护已经开启，如果你真的想要进入旁观请输入/kill");
 					return;
 				}
 			}
@@ -1539,7 +1531,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				pPlayer->m_LastSetTeam = Server()->Tick();
 				int TimeLeft = (pPlayer->m_TeamChangeTick - Server()->Tick())/Server()->TickSpeed();
 				char aBuf[128];
-				str_format(aBuf, sizeof(aBuf), "Time to wait before changing team: %02d:%02d", TimeLeft/60, TimeLeft%60);
+				str_format(aBuf, sizeof(aBuf), "修改队伍还需要等待: %02d:%02d", TimeLeft/60, TimeLeft%60);
 				SendBroadcast(aBuf, ClientID);
 				return;
 			}
@@ -1551,14 +1543,14 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 				CGameControllerWarioWare* Controller = (CGameControllerWarioWare*)m_pController;
 
 				if(pPlayer->m_Paused)
-					SendChatTarget(ClientID,"Use /pause first then you can kill");
+					SendChatTarget(ClientID,"请先使用/pause再自杀");
 				else
 				{
 					//pPlayer->m_LastSetTeam = Server()->Tick();
 
 					if (Controller->isInGame() and Controller->inMicroGame() and (pPlayer->GetTeam() == TEAM_SPECTATORS))
 					{
-						SendChatTarget(ClientID, "Wait for the current microgame to end.");
+						SendChatTarget(ClientID, "等待当前的小游戏结束");
 						return;
 					}
 
@@ -1601,8 +1593,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(pPlayer->m_VersionSpam < 10)
 			{
 				char aBuf[128];
-				str_format(aBuf, sizeof(aBuf), "%s client version: %d %s", Server()->ClientName(ClientID), pPlayer->m_ClientVersion, (isBot) ? "(BOT)" : "");
-				dbg_msg("DDNet", aBuf);
+				str_format(aBuf, sizeof(aBuf), "%s 客户端版本: %d %s", Server()->ClientName(ClientID), pPlayer->m_ClientVersion, (isBot) ? "(机器人)" : "");
 				SendChat(-1, CGameContext::CHAT_ALL, aBuf);
 				pPlayer->m_VersionSpam++;
 			}
@@ -1677,7 +1668,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 
 			pPlayer->m_LastSetSpectatorMode = Server()->Tick();
 			if(pMsg->m_SpectatorID != SPEC_FREEVIEW && (!m_apPlayers[pMsg->m_SpectatorID] || m_apPlayers[pMsg->m_SpectatorID]->GetTeam() == TEAM_SPECTATORS))
-				SendChatTarget(ClientID, "Invalid spectator id used");
+				SendChatTarget(ClientID, "无效的客户端ID");
 			else
 				pPlayer->m_SpectatorID = pMsg->m_SpectatorID;
 		}
@@ -1702,7 +1693,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			if(str_comp(aOldName, Server()->ClientName(ClientID)) != 0)
 			{
 				char aChatText[256];
-				str_format(aChatText, sizeof(aChatText), "'%s' changed name to '%s'", aOldName, Server()->ClientName(ClientID));
+				str_format(aChatText, sizeof(aChatText), "'%s' 更名为 '%s'", aOldName, Server()->ClientName(ClientID));
 				SendChat(-1, CGameContext::CHAT_ALL, aChatText);
 			}
 			Server()->SetClientClan(ClientID, pMsg->m_pClan);
@@ -2071,12 +2062,12 @@ void CGameContext::ConSayAs(IConsole::IResult *pResult, void *pUserData)
 	int who = pResult->GetInteger(0);
 	if (who < 0 or who >= MAX_CLIENTS)
 	{
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "invalid client ID");
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "未知的客户端ID");
 		return;
 	}
 	else if (not pSelf->m_apPlayers[who])
 	{
-		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "player doesn't exist");
+		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "server", "缺少此玩家");
 		return;
 	}
 	pSelf->SendChat(who, CGameContext::CHAT_ALL, pResult->GetString(1));
@@ -2108,7 +2099,7 @@ void CGameContext::ConSetTeamAll(IConsole::IResult *pResult, void *pUserData)
 	int Team = clamp(pResult->GetInteger(0), -1, 1);
 
 	char aBuf[256];
-	str_format(aBuf, sizeof(aBuf), "All players were moved to the %s", pSelf->m_pController->GetTeamName(Team));
+	str_format(aBuf, sizeof(aBuf), "所有的玩家都被移动到%s", pSelf->m_pController->GetTeamName(Team));
 	pSelf->SendChat(-1, CGameContext::CHAT_ALL, aBuf);
 
 	for(int i = 0; i < MAX_CLIENTS-1; ++i)
@@ -3284,14 +3275,14 @@ void CGameContext::Whisper(int ClientID, char *pStr)
 
 	if (Error)
 	{
-		str_format(aBuf, sizeof(aBuf), "Invalid whisper");
+		str_format(aBuf, sizeof(aBuf), "无效的私聊");
 		SendChatTarget(ClientID, aBuf);
 		return;
 	}
 
 	if (Victim >= MAX_CLIENTS || !CheckClientID2(Victim))
 	{
-		str_format(aBuf, sizeof(aBuf), "No player with name \"%s\" found", pName);
+		str_format(aBuf, sizeof(aBuf), "找不到玩家 \"%s\"", pName);
 		SendChatTarget(ClientID, aBuf);
 		return;
 	}
@@ -3370,9 +3361,9 @@ void CGameContext::List(int ClientID, const char* filter)
 	char buf[256];
 	int bufcnt = 0;
 	if (filter[0])
-		str_format(buf, sizeof(buf), "Listing players with \"%s\" in name:", filter);
+		str_format(buf, sizeof(buf), "名称中包含 \"%s\" 的玩家列表:", filter);
 	else
-		str_format(buf, sizeof(buf), "Listing all players:", filter);
+		str_format(buf, sizeof(buf), "玩家列表:", filter);
 	SendChatTarget(ClientID, buf);
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
@@ -3401,6 +3392,6 @@ void CGameContext::List(int ClientID, const char* filter)
 	}
 	if (bufcnt != 0)
 		SendChatTarget(ClientID, buf);
-	str_format(buf, sizeof(buf), "%d players online", total);
+	str_format(buf, sizeof(buf), "%d 名玩家在线", total);
 	SendChatTarget(ClientID, buf);
 }

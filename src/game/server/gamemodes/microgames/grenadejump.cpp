@@ -5,13 +5,13 @@
 
 MGGrenadeJump::MGGrenadeJump(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "grenadejump";
+	m_microgameName = "榴弹跳";
 	m_boss = false;
 }
 
 void MGGrenadeJump::Start()
 {
-	GameServer()->SendBroadcast("Grenade jump!", -1);
+	GameServer()->SendBroadcast("榴弹跳!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgGrenadeJump_Offset, g_Config.m_WwSndMgGrenadeJump_Length);
 	
 	for (int i=0; i<MAX_CLIENTS; i++)

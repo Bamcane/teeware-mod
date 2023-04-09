@@ -5,7 +5,7 @@
 
 MGPassBall::MGPassBall(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "passball";
+	m_microgameName = "传球";
 	m_boss = true;
 
 	// load the map's ball spawn and team separator entities
@@ -107,7 +107,7 @@ void MGPassBall::Start()
 
 	m_GameOver = false;
 
-	GameServer()->SendBroadcast("Pass the balls to the other team!\nThe team with least balls wins!", -1);
+	GameServer()->SendBroadcast("把球传给其他队伍!\n球最少的队伍胜利!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgPassBall_Offset, g_Config.m_WwSndMgPassBall_Length);
 }
 
@@ -185,22 +185,22 @@ void MGPassBall::Tick()
 		}
 
 		char abuf[128], abuf2[128];
-		str_format(abuf, sizeof(abuf), "Scores: %d-%d", leftScore, rightScore);
+		str_format(abuf, sizeof(abuf), "分数: %d-%d", leftScore, rightScore);
 
 		if (leftScore < rightScore)
 		{
-			str_format(abuf2, sizeof(abuf2), "Left team wins!");
+			str_format(abuf2, sizeof(abuf2), "左边的队伍获胜!");
 			for (unsigned i=0; i<m_LeftTeamPlayers.size(); i++)
 				Controller()->winMicroGame(m_LeftTeamPlayers[i]);
 		}
 		else if (rightScore < leftScore)
 		{
-			str_format(abuf2, sizeof(abuf2), "Right team wins!");
+			str_format(abuf2, sizeof(abuf2), "右边的队伍获胜!");
 			for (unsigned i=0; i<m_RightTeamPlayers.size(); i++)
 				Controller()->winMicroGame(m_RightTeamPlayers[i]);
 		}
 		else
-			str_format(abuf2, sizeof(abuf2), "Draw!");
+			str_format(abuf2, sizeof(abuf2), "平局!");
 
 		GameServer()->SendChat(-1, CGameContext::CHAT_ALL, abuf);
 		GameServer()->SendChat(-1, CGameContext::CHAT_ALL, abuf2);

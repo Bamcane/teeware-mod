@@ -5,7 +5,7 @@
 
 MGKamikaze::MGKamikaze(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "kamikaze";
+	m_microgameName = "炸弹人";
 	m_boss = false;
 }
 
@@ -36,7 +36,7 @@ void MGKamikaze::Start()
 				str_copy(pPlayer->m_TeeInfos.m_SkinName, "default", sizeof(pPlayer->m_TeeInfos.m_SkinName));
 
 			Controller()->g_Complete[i] = true;
-			GameServer()->SendBroadcast("Avoid the kamikaze!", i);
+			GameServer()->SendBroadcast("远离炸弹人!", i);
 		}
 	}
 

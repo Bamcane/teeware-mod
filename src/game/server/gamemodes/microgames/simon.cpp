@@ -3,17 +3,17 @@
 #include <engine/shared/config.h>
 #include "simon.h"
 
-const char *simonNames[] = {"Simon", "Someone"};
-const char *simonModes[2][3] = {
-	{"Jump", "Look up", "Look down"},
-	{"Don't jump", "Don't look up", "Don't look down"}
+const char *simonNames[] = {"大鬼", "小鬼"};
+const char *simonModes[2][4] = {
+	{"跳", "看头上", "看下面", "锤击"},
+	{"别跳", "别看头上", "别看下面", "不要锤"}
 };
 const float PI = 3.141592653589793f;
 
 
 MGSimon::MGSimon(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "simon";
+	m_microgameName = "大鬼";
 	m_boss = false;
 }
 
@@ -21,7 +21,7 @@ void MGSimon::Start()
 {
 	m_Someone = rand() % 2; // simon/someone
 	m_SimonNegative = rand() % 2; // simonModes[] array ind 1 [2] (do/don't)
-	m_SimonMode = rand() % 3; // simonModes[] array ind 2 [3] (jump, look up, look down)
+	m_SimonMode = rand() % 4; // simonModes[] array ind 2 [3] (jump, look up, look down. hammer)
 	
 	for (int i=0; i<MAX_CLIENTS; i++)
 	{
@@ -30,7 +30,7 @@ void MGSimon::Start()
 	}
 	
 	char aBuf[96];
-	str_format(aBuf, sizeof(aBuf), "%s says: %s!", simonNames[m_Someone], simonModes[m_SimonNegative][m_SimonMode]);
+	str_format(aBuf, sizeof(aBuf), "%s说: %s!", simonNames[m_Someone], simonModes[m_SimonNegative][m_SimonMode]);
 	GameServer()->SendBroadcast(aBuf, -1);
 
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgSimonSays_Offset, g_Config.m_WwSndMgSimonSays_Length);
@@ -58,6 +58,7 @@ void MGSimon::Tick()
 			bool objective = (m_SimonMode == 0 and input->m_Jump&1) or // jump
 							 (m_SimonMode == 1 and angle >= 75 and angle < 105) or // up
 							 (m_SimonMode == 2 and angle <= -75 and angle > -105); // down
+							 (m_SimonMode == 3 and input->m_Fire&1 and Char->GetActiveWeapon() == WEAPON_HAMMER); // down
 
 			if (objective)
 			{
@@ -65,23 +66,27 @@ void MGSimon::Tick()
 				{
 					Controller()->killAndLoseMicroGame(i);
 					if (m_Someone)
-						GameServer()->SendChatTarget(i, "Simon didn't say it!... 1");
+						GameServer()->SendChatTarget(i, "小鬼说的不能信!...");
+					else
+						GameServer()->SendChatTarget(i, "大鬼说不能!...");
 				}
 				else
 				{
 					if (m_Someone and m_SimonNegative and m_SimonMode == 0 and input->m_Jump&1)
 						m_SomeoneDontJump[i] = true;
+					if (m_Someone and m_SimonNegative and m_SimonMode == 3 and input->m_Fire&1 and Char->GetActiveWeapon() == WEAPON_HAMMER)
+						m_SomeoneDontHammer[i] = true;
+					
 					Controller()->winMicroGame(i);
 				}
 			}
 
 			// reduced timer for someone says don't
 			if (timeLeft < 2700 && m_SimonNegative && m_Someone) {
-				if (!objective and !m_SomeoneDontJump[i]) {
+				if (!objective and !m_SomeoneDontJump[i] && !m_SomeoneDontHammer[i]) {
 					Controller()->killAndLoseMicroGame(i);
 					if (m_Someone)
-						GameServer()->SendChatTarget(i, "Simon didn't say it!... 2");
-
+						GameServer()->SendChatTarget(i, "小鬼说的不能信!...");
 				}
 			}
 		}

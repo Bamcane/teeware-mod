@@ -5,7 +5,7 @@
 
 MGLuckyDoor::MGLuckyDoor(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "luckydoor";
+	m_microgameName = "幸运之门";
 	m_boss = false;
 }
 
@@ -59,7 +59,7 @@ void MGLuckyDoor::Start()
 		Controller()->teleportPlayer(i, 13);
 	}
 
-	GameServer()->SendBroadcast("Enter a door!", -1);
+	GameServer()->SendBroadcast("找到正确的门!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgLuckyDoor_Offset, g_Config.m_WwSndMgLuckyDoor_Length);
 }
 

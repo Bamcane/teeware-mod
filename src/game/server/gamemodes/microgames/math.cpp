@@ -3,7 +3,7 @@
 
 MGMath::MGMath(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "math";
+	m_microgameName = "数学";
 	m_boss = false;
 }
 
@@ -36,7 +36,7 @@ void MGMath::Start()
 		m_num1 = ((rand() % 8) + 1) * m_num2;
 	}
 	
-	str_format(aBuf, sizeof(aBuf), "Type the answer!\n %d%c%d = ?", m_num1, m_operation, m_num2);
+	str_format(aBuf, sizeof(aBuf), "回答题目!\n %d%c%d等于几?", m_num1, m_operation, m_num2);
 	GameServer()->SendBroadcast(aBuf, -1);
 	
 	int snd1[2] = {g_Config.m_WwSndMgAnswer1_Offset, g_Config.m_WwSndMgAnswer2_Offset};
@@ -67,7 +67,7 @@ bool MGMath::onChat(int client, const char *msg)
 		{
 			m_winFirst = true;
 			char aBuf[128];
-			str_format(aBuf, sizeof(aBuf), "%s answered first!", GameServer()->Server()->ClientName(client));
+			str_format(aBuf, sizeof(aBuf), "%s 最先回答!", GameServer()->Server()->ClientName(client));
 			GameServer()->SendChat(-1, CGameContext::CHAT_ALL, aBuf);
 		}
 		Controller()->winMicroGame(client);

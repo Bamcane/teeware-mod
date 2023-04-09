@@ -8,7 +8,7 @@
 
 MGReachEndNade2::MGReachEndNade2(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "reachendnade2";
+	m_microgameName = "抵达终点2";
 	m_boss = false;
 
 	// load the map's nade spawn entities

@@ -4,19 +4,19 @@
 #include "dontmove.h"
 
 const char *modes[7][2] = {
-	{"Don't move!", "Don't stop moving!"},
-	{"Keep still!", "Don't keep still!"},
-	{"Hold your position!", "Keep moving!"},
-	{"Stand still!", "Move your body!"},
-	{"Nobody move!", "Let's move, everybody!"},
-	{"Let's hold, everybody!", "Nobody stay still!"},
-	{"Freeze!", "Keep running!"}
+	{"不要移动!", "不要停下!"},
+	{"保持静止!", "不要保持静止!"},
+	{"保持当前位置!", "保持移动!"},
+	{"站立不动!", "移动你的身体!"},
+	{"不能有人动!", "所有人，一起动!"},
+	{"所有人，一起保持静止!", "不能有人停下!"},
+	{"速速冻结!", "不停走路!"}
 };
 
 
 MGDontMove::MGDontMove(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "dontmove";
+	m_microgameName = "别动";
 	m_boss = false;
 }
 

@@ -9,7 +9,7 @@
 
 MGBombRain::MGBombRain(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "bombrain";
+	m_microgameName = "榴弹雨";
 	m_boss = false;
 
 	// load the map's bomb rain entities
@@ -45,7 +45,7 @@ void MGBombRain::Start()
 		Controller()->g_Complete[i] = true;
 
 	m_startTick = Server()->Tick();
-	GameServer()->SendBroadcast("Avoid the bombs!", -1);
+	GameServer()->SendBroadcast("躲避榴弹!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgBombRain_Offset, g_Config.m_WwSndMgBombRain_Length);
 
 	// set to a slower speed
@@ -79,6 +79,20 @@ void MGBombRain::End()
 void MGBombRain::Tick()
 {
 	float timeLeft = Controller()->getTimeLength() - Controller()->getTimer();
+
+	for (int i=0; i<MAX_CLIENTS; i++)
+	{
+		CCharacter *Char = GameServer()->GetPlayerChar(i);
+		if (not Char) continue;
+		
+		if(Char->m_Pos.y < 140 * 32.0f)
+		{
+			Char->Die(i, WEAPON_SELF);
+			char aBuf[256];
+			str_format(aBuf, sizeof(aBuf), "%s想要逃脱榴弹雨被制裁了!", Server()->ClientName(i));
+			GameServer()->SendChatTarget(-1, aBuf);
+		}
+	}
 
 	if (timeLeft < 7900 and timeLeft > 650) // start dropping nukes
 	{

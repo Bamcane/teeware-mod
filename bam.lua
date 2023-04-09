@@ -623,5 +623,5 @@ else
 	build(debug_sql_settings)
 	build(release_settings)
 	build(release_sql_settings)
-	DefaultTarget("game_debug")
+	DefaultTarget("server_debug")
 end

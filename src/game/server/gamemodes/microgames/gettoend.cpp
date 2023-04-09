@@ -5,7 +5,7 @@
 
 MGGetToEnd::MGGetToEnd(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "gettoend";
+	m_microgameName = "到达终点";
 	m_boss = false;
 }
 
@@ -22,7 +22,7 @@ void MGGetToEnd::Start()
 		Char->SetCollideOthers(false);
 	}
 	
-	GameServer()->SendBroadcast("Get to the end!", -1);
+	GameServer()->SendBroadcast("到达终点!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgGetToEnd_Offset, g_Config.m_WwSndMgGetToEnd_Length);
 }
 

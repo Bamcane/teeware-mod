@@ -395,8 +395,8 @@ const char *IGameController::GetTeamName(int Team)
 	}*/
 
 	if(Team == 0)
-		return "game";
-	return "spectators";
+		return "游戏";
+	return "旁观";
 }
 
 //static bool IsSeparator(char c) { return c == ';' || c == ' ' || c == ',' || c == '\t'; }

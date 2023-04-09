@@ -8,7 +8,7 @@
 
 MGReachEndNade1::MGReachEndNade1(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "reachendnade1";
+	m_microgameName = "抵达终点1";
 	m_boss = false;
 
 	// load the map's nade spawn entities
@@ -43,7 +43,7 @@ void MGReachEndNade1::Start()
 	}
 
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgReachEndNade1_Offset, g_Config.m_WwSndMgReachEndNade1_Length);
-	GameServer()->SendBroadcast("Reach the end!", -1);
+	GameServer()->SendBroadcast("到达终点!", -1);
 }
 
 void MGReachEndNade1::End()

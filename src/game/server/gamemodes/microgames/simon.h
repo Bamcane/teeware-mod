@@ -25,6 +25,7 @@ private:
 	int m_SimonMode; // look up, look down, jump
 	int m_SimonNegative; // do, don't
 	bool m_SomeoneDontJump[MAX_CLIENTS]; // if player did the "someone says don't jump" objective
+	bool m_SomeoneDontHammer[MAX_CLIENTS]; // if player did the "someone says don't hammer" objective
 };
 
 #endif // _MICROGAME_SIMON_H

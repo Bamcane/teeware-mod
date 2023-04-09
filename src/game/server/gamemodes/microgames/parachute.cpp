@@ -5,7 +5,7 @@
 
 MGParachute::MGParachute(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "parachute";
+	m_microgameName = "抵达平台";
 	m_boss = false;
 }
 
@@ -23,7 +23,7 @@ void MGParachute::Start()
 		Controller()->teleportPlayer(i, 4);
 	}
 
-	GameServer()->SendBroadcast("Get on the platform!", -1);
+	GameServer()->SendBroadcast("抵达平台上!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgGetOnPlatform2_Offset, g_Config.m_WwSndMgGetOnPlatform2_Length);
 }
 

@@ -5,7 +5,7 @@
 
 MGHitCow::MGHitCow(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "cow";
+	m_microgameName = "奶牛";
 	m_boss = false;
 }
 
@@ -20,8 +20,8 @@ void MGHitCow::Start()
 		Player->SetInfoLock(true); // prevent skin change
 		if (str_comp(Player->m_TeeInfos.m_SkinName, "giraffe") == 0) // remove fake
 			str_copy(Player->m_TeeInfos.m_SkinName, "default", sizeof(Player->m_TeeInfos.m_SkinName));
-		if (str_comp_nocase(Server()->ClientName(i), "cow") == 0) // remove fake
-			Server()->SetClientName(i, "fake");
+		if (str_comp_nocase(Server()->ClientName(i), "奶牛") == 0) // remove fake
+			Server()->SetClientName(i, "假的");
 
 		Char->SetCollideOthers(false); // FATTIES
 		Char->SetHookOthers(false); // trolls batting the cow away
@@ -31,7 +31,7 @@ void MGHitCow::Start()
 	// teleport the bot player
 	int bot_tele = 10;
 	int Num = Controller()->m_TeleOuts[bot_tele-1].size();
-	Server()->SetClientName(MAX_CLIENTS-1, "cow");
+	Server()->SetClientName(MAX_CLIENTS-1, "奶牛");
 	
 	// moo skin
 	str_copy(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName, "giraffe", sizeof(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName));
@@ -42,7 +42,7 @@ void MGHitCow::Start()
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->SetTeam(0, false); // move to game
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->ForceSpawn(Controller()->m_TeleOuts[bot_tele-1][(!Num)?Num:rand() % Num]);
 	
-	GameServer()->SendBroadcast("Find the cow and milk it!", -1);
+	GameServer()->SendBroadcast("找到奶牛并且挤奶!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgCow_Offset, g_Config.m_WwSndMgCow_Length);
 }
 

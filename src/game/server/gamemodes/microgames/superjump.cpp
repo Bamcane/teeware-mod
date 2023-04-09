@@ -5,7 +5,7 @@
 
 MGSuperJump::MGSuperJump(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "superjump";
+	m_microgameName = "超级跳";
 	m_boss = false;
 }
 
@@ -21,7 +21,7 @@ void MGSuperJump::Start()
 		Char->SetSuperJump(true);
 	}
 
-	GameServer()->SendBroadcast("Touch the sky!", -1);
+	GameServer()->SendBroadcast("抵达天空!", -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgTouchSky_Offset, g_Config.m_WwSndMgTouchSky_Length);
 }
 

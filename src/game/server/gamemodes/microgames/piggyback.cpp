@@ -5,7 +5,7 @@
 
 MGPiggyback::MGPiggyback(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "piggyback";
+	m_microgameName = "不要背猪";
 	m_boss = false;
 }
 
@@ -58,7 +58,7 @@ void MGPiggyback::Start()
 		str_copy(Player->m_TeeInfos.m_SkinName, "twintri", sizeof(Player->m_TeeInfos.m_SkinName));
 		Player->m_TeeInfos.m_UseCustomColor = 0;
 
-		GameServer()->SendBroadcast("Don't get piggybacked!\n          (Go right)          ", player); // centered text hack
+		GameServer()->SendBroadcast("不要让背上有3只猪!\n          (向右跑)          ", player); // centered text hack
 		Controller()->teleportPlayer(player, 22);
 	}
 
@@ -75,7 +75,7 @@ void MGPiggyback::Start()
 		str_copy(Player->m_TeeInfos.m_SkinName, "pinky", sizeof(Player->m_TeeInfos.m_SkinName));
 		Player->m_TeeInfos.m_UseCustomColor = 0;
 
-		GameServer()->SendBroadcast("Piggyback the green tees!", player);
+		GameServer()->SendBroadcast("让绿tee背上你们!", player);
 		Controller()->teleportPlayer(player, 20);
 	}
 
