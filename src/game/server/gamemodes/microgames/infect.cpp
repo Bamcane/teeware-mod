@@ -1,6 +1,7 @@
 // WarioWare mod by Headshotnoby
 
 #include <engine/shared/config.h>
+#include <game/server/faketee.h>
 #include "infect.h"
 
 MGInfect::MGInfect(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
