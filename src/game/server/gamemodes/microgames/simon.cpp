@@ -100,7 +100,8 @@ void MGSimon::OnCharacterDamage(int Victim, int Killer, int Dmg, int Weapon)
 	if (m_Someone == m_SimonNegative) 
 	{
 		Controller()->winMicroGame(Killer);
-	} else {
+		m_SomeoneDontHammer[i] = true;
+	} else{
 		if (!Controller()->g_Complete[Killer]) {
 			Controller()->killAndLoseMicroGame(Killer);
 			if (m_Someone)
