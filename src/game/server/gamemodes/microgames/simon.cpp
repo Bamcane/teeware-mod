@@ -108,7 +108,7 @@ void MGSimon::OnCharacterDamage(int Victim, int Killer, int Dmg, int Weapon)
 			if (m_Someone)
 				GameServer()->SendChatTarget(Killer, "小鬼说的不能信!...");
 			else
-				GameServer()->SendChatTarget(i, "大鬼说不能!...");
+				GameServer()->SendChatTarget(Killer, "大鬼说不能!...");
 		}
 	}
 }
