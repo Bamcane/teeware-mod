@@ -255,10 +255,10 @@ void MGInfect::OnBotInput(CNetObj_PlayerInput* Input)
 		Input->m_TargetX = Target->m_Pos.x - Bot->m_Pos.x;
 		Input->m_TargetY = Target->m_Pos.y - Bot->m_Pos.y;
 
-		if(Target->m_Pos.y < Bot->m_Pos.y)
+		if(Target->m_Pos.y < Bot->m_Pos.y && Bot->IsGrounded())
 		{
 			Input->m_Jump = 1;
-		}
+		}else Input->m_Jump = 0;
 	}
 	else
 	{
