@@ -37,13 +37,16 @@ void MGInfect::Start()
 		Controller()->g_Complete[i] = (GameServer()->GetPlayerChar(i));
 	}
 
+	int bot_tele = 20;
+	int Num = Controller()->m_TeleOuts[bot_tele-1].size();
+
 	str_copy(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName, "cammo", sizeof(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName));
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_UseCustomColor = 1;
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_ColorBody = 3866368;
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_ColorFeet = 184;
 
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->SetTeam(0, false); // move to game
-	GameServer()->m_apPlayers[MAX_CLIENTS-1]->ForceSpawn(Controller()->m_TeleOuts[19]);
+	GameServer()->m_apPlayers[MAX_CLIENTS-1]->ForceSpawn(Controller()->m_TeleOuts[bot_tele-1][(!Num)?Num:rand() % Num]);
 	
 
 	m_IsInfect[MAX_CLIENTS-1] = true;
