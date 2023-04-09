@@ -128,7 +128,7 @@ void MGInfect::Tick()
 	}
 	
 	{
-		for (unsigned i=0; i<MAX_CLIENTS; i++)
+		for (unsigned i=0; i<MAX_CLIENTS-1; i++)
 		{
 			int client = i;
 			CCharacter *Char = GameServer()->GetPlayerChar(client);
@@ -257,5 +257,29 @@ void MGInfect::OnBotInput(CNetObj_PlayerInput* Input)
 		{
 			FakeTee::pathFindMove(GameServer(), 0, Input);
 		}
+	}
+
+	CCharacter *aEnts[MAX_CLIENTS];
+	float Radius = Bot->m_ProximityRadius * 1.5f;
+	int Num = GameServer()->m_World.FindEntities(Bot->m_Pos, Radius, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+
+	for (int ii = 0; ii < Num; ii++)
+	{
+		if (aEnts[ii] == Bot)
+			continue;
+		
+		// check so we are sufficiently close
+		if (distance(aEnts[ii]->m_Pos, Bot->m_Pos) > Radius)
+			continue;
+
+		int ClientID = aEnts[ii]->GetPlayer()->GetCID();
+		if (m_IsInfect[ClientID])
+			continue;
+		
+		m_IsInfect[ClientID] = true;
+		str_copy(GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_SkinName, "cammo", sizeof(GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_SkinName));
+		GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor = 1;
+		GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_ColorBody = 3866368;
+		aEnts[ii]->m_ForcedTuneZone = -1;
 	}
 }
