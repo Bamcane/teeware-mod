@@ -201,6 +201,20 @@ void MGInfect::OnBotInput(CNetObj_PlayerInput* Input)
 
 	if (not Bot) return;
 
+	int InfectNum = 0;
+	for(int i = 0;i < MAX_CLIENTS-1;i ++)
+	{
+		CCharacter *Char = GameServer()->GetPlayerChar(i);
+		if(m_IsInfect[i] || !Char)
+			InfectNum++;
+	}
+
+	if(InfectNum == MAX_CLIENTS-1)
+	{
+		Controller()->nextWarioState();
+		return;
+	}
+
 	if (m_SwitchTargetTick <= 0 or not Target)
 	{
 		int loops = 0;
@@ -210,7 +224,7 @@ void MGInfect::OnBotInput(CNetObj_PlayerInput* Input)
 			m_Target = rand() % (MAX_CLIENTS-1);
 			loops++;
 		}
-		while (loops < 300 and not (Target = GameServer()->GetPlayerChar(m_Target)) and not(m_IsInfect[m_Target]));
+		while (loops < 300 and not (Target = GameServer()->GetPlayerChar(m_Target)) and not (m_IsInfect[m_Target]));
 
 		if (loops == 300) // everyone died
 		{
