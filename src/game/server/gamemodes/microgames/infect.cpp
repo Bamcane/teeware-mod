@@ -217,7 +217,7 @@ void MGInfect::OnBotInput(CNetObj_PlayerInput* Input)
 		}
 	}
 
-	if (m_SwitchTargetTick <= 0 or not Target)
+	if (m_SwitchTargetTick <= 0 or not Target or m_IsInfect[m_Target])
 	{
 		int loops = 0;
 		m_PathFound = false;
