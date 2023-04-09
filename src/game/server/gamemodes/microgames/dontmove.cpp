@@ -22,7 +22,7 @@ MGDontMove::MGDontMove(CGameContext* pGameServer, CGameControllerWarioWare* pCon
 
 void MGDontMove::Start()
 {
-	m_Phrase = rand() % 2;
+	m_Phrase = rand() % 7;
 	m_Mode = rand() % 2;			
 	GameServer()->SendBroadcast(modes[m_Phrase][m_Mode], -1);
 	Controller()->setPlayerTimers(g_Config.m_WwSndMgDontMove_Offset, g_Config.m_WwSndMgDontMove_Length);
