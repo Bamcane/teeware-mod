@@ -559,7 +559,7 @@ void CCharacter::FireWeapon()
 					);//SoundImpact
 
 			CGameControllerWarioWare* controller = ((CGameControllerWarioWare*)GameServer()->m_pController);
-			if (controller->inMicroGame() and str_comp(controller->getMicroGame()->m_microgameName, "passball") == 0)
+			if (controller->inMicroGame() and str_comp(controller->getMicroGame()->m_microgameName, "传球") == 0)
 			{
 				pProj->SetFootMode(true);
 				SetWeaponGot(WEAPON_GRENADE, false);

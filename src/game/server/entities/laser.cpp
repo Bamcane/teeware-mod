@@ -38,7 +38,7 @@ bool CLaser::HitCharacter(vec2 From, vec2 To)
 
 	bool isMGTarget = false;
 
-	if (controller->inMicroGame() and str_comp(controller->getMicroGame()->m_microgameName, "target") == 0)
+	if (controller->inMicroGame() and str_comp(controller->getMicroGame()->m_microgameName, "目标") == 0)
 	{
 		isMGTarget = true;
 		pHit = GameServer()->m_World.IntersectBotCharacter(m_Pos, To, 0.f, At);
