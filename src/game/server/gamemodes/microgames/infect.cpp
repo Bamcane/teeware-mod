@@ -153,7 +153,7 @@ void MGInfect::Tick()
 					continue;
 				
 				m_IsInfect[ClientID] = true;
-				Player->SetInfoLock(false);
+				GameServer()->m_apPlayers[ClientID]->SetInfoLock(false);
 				str_copy(GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_SkinName, "cammo", sizeof(GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_SkinName));
 				GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor = 1;
 				GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_ColorBody = 3866368;
