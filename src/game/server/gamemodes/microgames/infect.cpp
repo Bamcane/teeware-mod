@@ -126,7 +126,7 @@ void MGInfect::Tick()
 				Controller()->killAndLoseMicroGame(i);
 		}
 	}
-	else
+	
 	{
 		for (unsigned i=0; i<MAX_CLIENTS; i++)
 		{
