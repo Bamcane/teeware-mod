@@ -42,7 +42,7 @@ void MGKamikaze::Start()
 
 	char aBuf[128];
 	m_Amount = (online <= 6) ? 1 : 2; // exploding 2 players with not enough people online is a challenge.
-	str_format(aBuf, sizeof(aBuf), "Explode %d %s!", m_Amount, (m_Amount > 1) ? "players" : "player");
+	str_format(aBuf, sizeof(aBuf), "炸死%d个玩家!", m_Amount);
 	GameServer()->SendBroadcast(aBuf, m_Victim);
 
 	// ddnet 9 gimmick, play map music
