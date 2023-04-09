@@ -160,27 +160,22 @@ void MGInfect::Tick()
 
 bool MGInfect::OnWinMicrogame(int client, int winTile)
 {
-	for (unsigned i=0; i<m_infects.size(); i++)
-	{
-		if (m_infects[i] == client) // don't let pinkys win
-			return false;
-	}
-
 	if (winTile == TILE_WARIOWARE_REACHEND_NADE1_WIN) // kill all infects
 	{
-		for (unsigned i=0; i<m_infects.size(); i++)
+		for (unsigned i=0; i<MAX_CLIENTS-1; i++)
 		{
-			CCharacter *Char = GameServer()->GetPlayerChar(m_infects[i]);
+			CCharacter *Char = GameServer()->GetPlayerChar(i);
 			if (not Char) continue;
+			if (not m_IsInfect[i]) continue;
 
 			float timeLeft = Controller()->getTimeLength() - Controller()->getTimer();
-			Char->Die(m_infects[i], WEAPON_WORLD, timeLeft/1000.f);
+			Char->Die(i, WEAPON_WORLD, timeLeft/1000.f);
 		}
 
 		// all twintris win
 		for (unsigned i=0; i<MAX_CLIENTS-1; i++)
 		{
-			CCharacter *Char = GameServer()->GetPlayerChar(m_infects[i]);
+			CCharacter *Char = GameServer()->GetPlayerChar(i);
 			if (not Char) continue;
 			if (m_IsInfect[i])
 				continue;
