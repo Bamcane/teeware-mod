@@ -95,8 +95,9 @@ void MGSimon::OnCharacterDamage(int Victim, int Killer, int Dmg, int Weapon)
 {
 	if(m_SimonMode != 3)
 		return;
-
-	if (Weapon == WEAPON_HAMMER && m_Someone == m_SimonNegative) 
+	if(Weapon != WEAPON_HAMMER)
+		return;
+	if (m_Someone == m_SimonNegative) 
 	{
 		Controller()->winMicroGame(Killer);
 	} else {
