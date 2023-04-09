@@ -103,7 +103,7 @@ void MGSimon::OnCharacterDamage(int Victim, int Killer, int Dmg, int Weapon)
 		if (!Controller()->g_Complete[Killer]) {
 			Controller()->killAndLoseMicroGame(Killer);
 			if (m_Someone)
-				GameServer()->SendChatTarget(i, "小鬼说的不能信!...");
+				GameServer()->SendChatTarget(Killer, "小鬼说的不能信!...");
 		}
 	}
 }
