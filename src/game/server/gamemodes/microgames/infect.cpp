@@ -43,7 +43,7 @@ void MGInfect::Start()
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_ColorFeet = 184;
 
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->SetTeam(0, false); // move to game
-	Controller()->teleportPlayer(GameServer()->m_apPlayers[MAX_CLIENTS-1], 20);
+	Controller()->teleportPlayer(MAX_CLIENTS-1, 20);
 
 	m_IsInfect[MAX_CLIENTS-1] = true;
 	GameServer()->SendBroadcast("不要被碰到感染!(向右抵达终点)", -1);

@@ -21,6 +21,7 @@ public:
 	void Tick();
 
 	void OnBotInput(CNetObj_PlayerInput* Input);
+	bool OnWinMicrogame(int client, int winTile);
 
 private:
 	bool m_Moved; // there is a delay before the bot is moved ingame, to sync with music. this bool makes sure the bot isn't moved twice.
