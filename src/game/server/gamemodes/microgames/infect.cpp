@@ -47,7 +47,7 @@ void MGInfect::Start()
 
 	m_IsInfect[MAX_CLIENTS-1] = true;
 	GameServer()->SendBroadcast("不要被碰到感染!(向右抵达终点)", -1);
-	Controller()->setPlayerTimers(g_Config.m_WwSndMgInfectback_Offset, g_Config.m_WwSndMgInfectback_Length);
+	Controller()->setPlayerTimers(g_Config.m_WwSndMgInfect_Offset, g_Config.m_WwSndMgInfect_Length);
 }
 
 void MGInfect::End()
