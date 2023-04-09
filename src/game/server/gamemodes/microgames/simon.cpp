@@ -5,8 +5,8 @@
 
 const char *simonNames[] = {"大鬼", "小鬼"};
 const char *simonModes[2][4] = {
-	{"跳", "看头上", "看下面", "锤击"},
-	{"别跳", "别看头上", "别看下面", "不要锤"}
+	{"跳", "看头上", "看下面", "锤别人"},
+	{"别跳", "别看头上", "别看下面", "不要锤别人"}
 };
 const float PI = 3.141592653589793f;
 
@@ -59,7 +59,6 @@ void MGSimon::Tick()
 			bool objective = (m_SimonMode == 0 and input->m_Jump&1) or // jump
 							 (m_SimonMode == 1 and angle >= 75 and angle < 105) or // up
 							 (m_SimonMode == 2 and angle <= -75 and angle > -105); // down
-							 (m_SimonMode == 3 and input2->m_Fire&1 and Char->GetActiveWeapon() == WEAPON_HAMMER); // down
 
 			if (objective)
 			{
@@ -75,8 +74,6 @@ void MGSimon::Tick()
 				{
 					if (m_Someone and m_SimonNegative and m_SimonMode == 0 and input->m_Jump&1)
 						m_SomeoneDontJump[i] = true;
-					if (m_Someone and m_SimonNegative and m_SimonMode == 3 and input2->m_Fire&1 and Char->GetActiveWeapon() == WEAPON_HAMMER)
-						m_SomeoneDontHammer[i] = true;
 					
 					Controller()->winMicroGame(i);
 				}
@@ -90,6 +87,23 @@ void MGSimon::Tick()
 						GameServer()->SendChatTarget(i, "小鬼说的不能信!...");
 				}
 			}
+		}
+	}
+}
+
+void MGSimon::OnCharacterDamage(int Victim, int Killer, int Dmg, int Weapon)
+{
+	if(m_SimonMode != 3)
+		return;
+
+	if (Weapon == WEAPON_HAMMER && m_Someone == m_SimonNegative) 
+	{
+		Controller()->winMicroGame(Killer);
+	} else {
+		if (!Controller()->g_Complete[Killer]) {
+			Controller()->killAndLoseMicroGame(Killer);
+			if (m_Someone)
+				GameServer()->SendChatTarget(i, "小鬼说的不能信!...");
 		}
 	}
 }

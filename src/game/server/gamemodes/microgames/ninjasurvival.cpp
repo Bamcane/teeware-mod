@@ -62,7 +62,7 @@ void MGNinjaSurvival::Tick()
 		
 		if(Char->m_Pos.y < 140 * 32.0f)
 		{
-			Char->Die(i, WEAPON_SELF);
+			Controller()->killAndLoseMicroGame(i);
 			char aBuf[256];
 			str_format(aBuf, sizeof(aBuf), "%s想要逃脱忍者被制裁了!", Server()->ClientName(i));
 			GameServer()->SendChatTarget(-1, aBuf);

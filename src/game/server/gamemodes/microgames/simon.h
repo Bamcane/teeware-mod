@@ -19,6 +19,7 @@ public:
 	void Start();
 	void End();
 	void Tick();
+	void OnCharacterDamage(int Victim, int Killer, int Dmg, int Weapon);
 
 private:
 	int m_Someone; // if "Someone says" then don't do it
