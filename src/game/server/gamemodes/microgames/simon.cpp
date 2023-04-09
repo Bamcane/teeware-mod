@@ -27,6 +27,7 @@ void MGSimon::Start()
 	{
 		Controller()->g_Complete[i] = (m_Someone or m_SimonNegative);
 		m_SomeoneDontJump[i] = false;
+		m_SomeoneDontHammer[i] = false;
 	}
 	
 	char aBuf[96];
@@ -53,7 +54,6 @@ void MGSimon::Tick()
 			if (not Char) continue;
 
 			CNetObj_PlayerInput* input = Char->GetInput();
-			CNetObj_PlayerInput* input2 = Char->GetLatestInput();
 			float angle = -atan2(input->m_TargetY, input->m_TargetX) / PI * 180;
 
 			bool objective = (m_SimonMode == 0 and input->m_Jump&1) or // jump
@@ -99,8 +99,9 @@ void MGSimon::OnCharacterDamage(int Victim, int Killer, int Dmg, int Weapon)
 		return;
 	if (m_Someone == m_SimonNegative) 
 	{
+		if (m_Someone and m_SimonNegative)
+			m_SomeoneDontHammer[Killer] = true;
 		Controller()->winMicroGame(Killer);
-		m_SomeoneDontHammer[Killer] = true;
 	} else{
 		if (!Controller()->g_Complete[Killer]) {
 			Controller()->killAndLoseMicroGame(Killer);
