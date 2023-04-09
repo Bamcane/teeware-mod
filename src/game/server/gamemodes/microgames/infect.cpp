@@ -132,6 +132,9 @@ void MGInfect::Tick()
 		{
 			int client = i;
 			CCharacter *Char = GameServer()->GetPlayerChar(client);
+			if(!Char)
+				return;
+
 			if(!m_IsInfect[i])
 				return;
 
@@ -153,11 +156,9 @@ void MGInfect::Tick()
 					continue;
 				
 				m_IsInfect[ClientID] = true;
-				GameServer()->m_apPlayers[ClientID]->SetInfoLock(false);
 				str_copy(GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_SkinName, "cammo", sizeof(GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_SkinName));
 				GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor = 1;
 				GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_ColorBody = 3866368;
-				GameServer()->m_apPlayers[ClientID]->SetInfoLock(true);
 				aEnts[ii]->m_ForcedTuneZone = -1;
 			}
 		}
