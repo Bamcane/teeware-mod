@@ -151,9 +151,8 @@ void MGInfect::Tick()
 				if (m_IsInfect[ClientID])
 					continue;
 				
-
 				m_IsInfect[ClientID] = true;
-				str_copy(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName, "cammo", sizeof(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName));
+				str_copy(GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_SkinName, "cammo", sizeof(GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_SkinName));
 				GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor = 1;
 				GameServer()->m_apPlayers[ClientID]->m_TeeInfos.m_ColorBody = 3866368;
 				aEnts[ii]->m_ForcedTuneZone = -1;
@@ -233,20 +232,15 @@ void MGInfect::OnBotInput(CNetObj_PlayerInput* Input)
 
 	if (not Wall)
 	{
-		m_PathFound = false;
 		Input->m_Hook = 0;
 		Input->m_Direction = dirX;
 		Input->m_TargetX = Target->m_Pos.x - Bot->m_Pos.x;
 		Input->m_TargetY = Target->m_Pos.y - Bot->m_Pos.y;
 
-		m_FireTick = (Wall) ? 25 : m_FireTick-1;
-		if (m_FireTick <= 0)
+		if(Target->m_Pos.y < Bot->m_Pos.y)
 		{
-			Input->m_Fire = 1;
-			m_FireTick = 40;
+			Input->m_Jump = 1;
 		}
-		else
-			Input->m_Fire = 0;
 	}
 	else
 	{
