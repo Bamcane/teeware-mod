@@ -3,11 +3,11 @@
 #include <engine/shared/config.h>
 #include "tilecolors.h"
 
-const char *colorNames[4][6] = {
-	{"红", "马里奥", "Tee的榴弹炮", "樱桃", "心脏", "成熟番茄"},
-	{"绿", "草", "树叶", "这个模式里的核废水", "青蛙", "未成熟番茄"},
-	{"蓝", "海洋", "水", "激光枪子弹", "索尼克", "蓝莓"},
-	{"黄", "太阳", "鸭子", "蛋黄", "香蕉", "梨"}
+const char *colorNames[4][7] = {
+	{"红", "马里奥", "Tee的榴弹炮", "樱桃", "心脏", "成熟番茄", "B站大会员"},
+	{"绿", "草", "树叶", "这个模式里的核废水", "青蛙", "未成熟番茄", "B站小会员"},
+	{"蓝", "海洋", "水", "激光枪子弹", "索尼克", "蓝莓", "默认的激光枪发射的激光"},
+	{"黄", "金币", "鸭子", "蛋黄", "香蕉皮", "梨皮", "感染模式不死族"}
 };
 
 
@@ -85,7 +85,7 @@ void MGTileColors::setAndSayColor()
 	while (m_currColor == m_lastColor);
 
 	m_lastColor = m_currColor;
-	m_colorName = rand() % 5;
+	m_colorName = rand() % 7;
 
 	char aBuf[128];
 	str_format(aBuf, sizeof(aBuf), "%d.\n跑到%s色的房间!", m_turn+1, colorNames[m_currColor][m_colorName]);
