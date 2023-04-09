@@ -165,7 +165,7 @@ bool MGInfect::OnWinMicrogame(int client, int winTile)
 	if (winTile == TILE_WARIOWARE_REACHEND_NADE1_WIN) // kill all infects
 	{
 		if(m_IsInfect[client])
-			return;
+			return false;
 
 		for (unsigned i=0; i<MAX_CLIENTS-1; i++)
 		{
