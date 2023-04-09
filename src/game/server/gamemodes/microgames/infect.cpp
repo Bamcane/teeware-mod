@@ -215,6 +215,8 @@ void MGInfect::OnBotInput(CNetObj_PlayerInput* Input)
 		{
 			Controller()->killAndLoseMicroGame(i);
 		}
+		Controller()->nextWarioState(); // force the microgame to end
+		return;
 	}
 
 	if (m_SwitchTargetTick <= 0 or not Target or m_IsInfect[m_Target])
