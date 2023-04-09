@@ -32,7 +32,7 @@ void MGInfect::Start()
 		Player->m_TeeInfos.m_UseCustomColor = 0;
 		Char->m_ForcedTuneZone = 4; // no, it won't crash here. see above on the online vector; this is guaranteed an online player
 
-		Controller()->teleportPlayer(player, 22);
+		Controller()->teleportPlayer(i, 22);
 
 		Controller()->g_Complete[i] = (GameServer()->GetPlayerChar(i));
 	}
