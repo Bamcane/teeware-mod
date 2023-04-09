@@ -211,8 +211,10 @@ void MGInfect::OnBotInput(CNetObj_PlayerInput* Input)
 
 	if(InfectNum == MAX_CLIENTS-1)
 	{
-		Controller()->nextWarioState();
-		return;
+		for(int i = 0;i < MAX_CLIENTS-1;i ++)
+		{
+			Controller()->killAndLoseMicroGame(i);
+		}
 	}
 
 	if (m_SwitchTargetTick <= 0 or not Target)
