@@ -97,18 +97,18 @@ void MGSimon::OnCharacterDamage(int Victim, int Killer, int Dmg, int Weapon)
 		return;
 	if(Weapon != WEAPON_HAMMER)
 		return;
+		
 	if (m_Someone == m_SimonNegative) 
 	{
 		if (m_Someone and m_SimonNegative)
 			m_SomeoneDontHammer[Killer] = true;
 		Controller()->winMicroGame(Killer);
-	} else{
-		if (!Controller()->g_Complete[Killer]) {
-			Controller()->killAndLoseMicroGame(Killer);
-			if (m_Someone)
-				GameServer()->SendChatTarget(Killer, "小鬼说的不能信!...");
-			else
-				GameServer()->SendChatTarget(Killer, "大鬼说不能!...");
-		}
+	} else
+	{
+		Controller()->killAndLoseMicroGame(Killer);
+		if (m_Someone)
+			GameServer()->SendChatTarget(Killer, "小鬼说的不能信!...");
+		else
+			GameServer()->SendChatTarget(Killer, "大鬼说不能!...");
 	}
 }

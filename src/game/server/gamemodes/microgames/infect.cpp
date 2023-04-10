@@ -57,6 +57,11 @@ void MGInfect::Start()
 
 void MGInfect::End()
 {
+	// move bot back to spec
+	GameServer()->m_apPlayers[MAX_CLIENTS-1]->SetTeam(TEAM_SPECTATORS, false);
+	str_copy(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName, "itsabot", sizeof(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName));
+	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_UseCustomColor = 0;
+	Server()->SetClientName(MAX_CLIENTS-1, "bot");
 
 	// reset player healths
 	for (int i=0; i<MAX_CLIENTS-1; i++)
@@ -190,11 +195,6 @@ bool MGInfect::OnWinMicrogame(int client, int winTile)
 				continue;
 			Controller()->winMicroGame(i);
 		}
-		// move bot back to spec
-		GameServer()->m_apPlayers[MAX_CLIENTS-1]->SetTeam(TEAM_SPECTATORS, false);
-		str_copy(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName, "itsabot", sizeof(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName));
-		GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_UseCustomColor = 0;
-		Server()->SetClientName(MAX_CLIENTS-1, "bot");
 		
 		return true;
 	}
