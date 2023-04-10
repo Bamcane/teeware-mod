@@ -70,7 +70,7 @@ void MGInfect::End()
 			Controller()->killAndLoseMicroGame(i);
 			
 		CPlayer *Player = GameServer()->m_apPlayers[i];
-		CCharacter *Char = (CPlayer) ? Player->GetCharacter() : 0;
+		CCharacter *Char = (Player) ? Player->GetCharacter() : 0;
 
 		if (not Player) continue;
 		Player->SetInfoLock(false);
