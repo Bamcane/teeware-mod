@@ -70,9 +70,9 @@ MACRO_CONFIG_INT(ClShowWelcome, cl_show_welcome, 1, 0, 1, CFGFLAG_CLIENT|CFGFLAG
 MACRO_CONFIG_INT(ClMotdTime, cl_motd_time, 10, 0, 100, CFGFLAG_CLIENT|CFGFLAG_SAVE, "How long to show the server message of the day")
 
 MACRO_CONFIG_STR(ClVersionServer, cl_version_server, 100, "version.teeworlds.com", CFGFLAG_CLIENT|CFGFLAG_SAVE, "Server to use to check for new versions")
-MACRO_CONFIG_STR(ClDDNetVersionServer, cl_ddnet_version_server, 100, "version.ddnet.tw", CFGFLAG_CLIENT|CFGFLAG_SAVE, "Server to use to check for new ddnet versions")
-MACRO_CONFIG_STR(ClDDNetUpdateServer, cl_ddnet_update_server, 100, "update.ddnet.tw", CFGFLAG_CLIENT|CFGFLAG_SAVE, "Server to use to update new ddnet versions")
-MACRO_CONFIG_STR(ClDDNetMapServer, cl_ddnet_maps_server, 100, "maps.ddnet.tw", CFGFLAG_CLIENT|CFGFLAG_SAVE, "Server to use to download maps")
+MACRO_CONFIG_STR(ClDDNetVersionServer, cl_ddnet_version_server, 100, "version.ddnet.org", CFGFLAG_CLIENT|CFGFLAG_SAVE, "Server to use to check for new ddnet versions")
+MACRO_CONFIG_STR(ClDDNetUpdateServer, cl_ddnet_update_server, 100, "update.ddnet.org", CFGFLAG_CLIENT|CFGFLAG_SAVE, "Server to use to update new ddnet versions")
+MACRO_CONFIG_STR(ClDDNetMapServer, cl_ddnet_maps_server, 100, "maps.ddnet.org", CFGFLAG_CLIENT|CFGFLAG_SAVE, "Server to use to download maps")
 
 MACRO_CONFIG_STR(ClLanguagefile, cl_languagefile, 255, "", CFGFLAG_CLIENT|CFGFLAG_SAVE, "What language file to use")
 MACRO_CONFIG_INT(ClVanillaSkinsOnly, cl_vanilla_skins_only, 0, 0, 1, CFGFLAG_CLIENT|CFGFLAG_SAVE, "Only show skins available in Vanilla Teeworlds")
@@ -172,7 +172,7 @@ MACRO_CONFIG_INT(SvRescue, sv_rescue, 0, 0, 1, CFGFLAG_SERVER, "Allow /rescue co
 MACRO_CONFIG_INT(SvRescueDelay, sv_rescue_delay, 5, 0, 1000, CFGFLAG_SERVER, "Number of seconds inbetween two rescues")
 
 // WarioWare
-MACRO_CONFIG_INT(WwForceMicrogame, ww_force_microgame, -1, -1, 22, CFGFLAG_SERVER, "force a specific microgame to always play")
+MACRO_CONFIG_INT(WwForceMicrogame, ww_force_microgame, -1, -1, 21, CFGFLAG_SERVER, "force a specific microgame to always play")
 MACRO_CONFIG_INT(WwMaxRounds, ww_max_rounds, 20, 1, 200, CFGFLAG_SERVER, "maximum microgame rounds, speedup halfway there, boss stage on final round")
 
 MACRO_CONFIG_INT(WwSndWaiting1_Offset, ww_snd_waiting1_offset,  1000, 0, 2147483647, CFGFLAG_SERVER, "'waiting for players 1' music offset in ms")
@@ -246,8 +246,6 @@ MACRO_CONFIG_INT(WwSndMgReachEndNade2_Offset, ww_snd_mg_reachendnade2_offset, 29
 MACRO_CONFIG_INT(WwSndMgReachEndNade2_Length, ww_snd_mg_reachendnade2_length, 28056, 0, 2147483647, CFGFLAG_SERVER, "reach the end nades 2 microgame music length in ms")
 MACRO_CONFIG_INT(WwSndMgPiggyback_Offset, ww_snd_mg_piggyback_offset, 58000, 0, 2147483647, CFGFLAG_SERVER, "piggyback microgame music offset in ms")
 MACRO_CONFIG_INT(WwSndMgPiggyback_Length, ww_snd_mg_piggyback_length, 27298, 0, 2147483647, CFGFLAG_SERVER, "piggyback microgame music length in ms")
-MACRO_CONFIG_INT(WwSndMgInfect_Offset, ww_snd_mg_infect_offset, 58000, 0, 2147483647, CFGFLAG_SERVER, "piggyback microgame music offset in ms")
-MACRO_CONFIG_INT(WwSndMgInfect_Length, ww_snd_mg_infect_length, 27298, 0, 2147483647, CFGFLAG_SERVER, "piggyback microgame music length in ms")
 
 // debug
 

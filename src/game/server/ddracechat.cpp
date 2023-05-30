@@ -34,7 +34,7 @@ void CGameContext::ConCredits(IConsole::IResult *pResult, void *pUserData)
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credit",
 		"which is a mod of Teeworlds by the Teeworlds developers.");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "credit",
-		"Check the changes on ddnet.tw");
+		"Check the changes on ddnet.org");
 }
 
 void CGameContext::ConInfo(IConsole::IResult *pResult, void *pUserData)
@@ -47,11 +47,11 @@ void CGameContext::ConInfo(IConsole::IResult *pResult, void *pUserData)
 			"Git revision hash: " GIT_SHORTREV_HASH);
 #endif
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info",
-			"Official site: ddnet.tw");
+			"Official site: ddnet.org");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info",
 			"For more Info /cmdlist");
 	pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "info",
-			"Or visit ddnet.tw");
+			"Or visit ddnet.org");
 }
 
 void CGameContext::ConHelp(IConsole::IResult *pResult, void *pUserData)
@@ -105,7 +105,7 @@ void CGameContext::ConSettings(IConsole::IResult *pResult, void *pUserData)
 		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "setting",
 				"teams, cheats, collision, hooking, endlesshooking, me, ");
 		pSelf->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "setting",
-				"hitting, oldlaser, timeout, votes, pause and scores");
+				"hitting, oldlaser, votes, pause and scores");
 	}
 	else
 	{
@@ -524,31 +524,6 @@ void CGameContext::ConMapInfo(IConsole::IResult *pResult, void *pUserData)
 
 void CGameContext::ConTimeout(IConsole::IResult *pResult, void *pUserData)
 {
-	CGameContext *pSelf = (CGameContext *) pUserData;
-	if (!CheckClientID(pResult->m_ClientID))
-		return;
-
-	CPlayer *pPlayer = pSelf->m_apPlayers[pResult->m_ClientID];
-	if (!pPlayer)
-		return;
-
-	for(int i = 0; i < pSelf->Server()->MaxClients(); i++)
-	{
-		if (i == pResult->m_ClientID) continue;
-		if (!pSelf->m_apPlayers[i]) continue;
-		if (str_comp(pSelf->m_apPlayers[i]->m_TimeoutCode, pResult->GetString(0))) continue;
-		if (((CServer *)pSelf->Server())->m_NetServer.SetTimedOut(i, pResult->m_ClientID))
-		{
-			((CServer *)pSelf->Server())->DelClientCallback(pResult->m_ClientID, "Timeout Protection used", ((CServer *)pSelf->Server()));
-			((CServer *)pSelf->Server())->m_aClients[i].m_Authed = CServer::AUTHED_NO;
-			if (pSelf->m_apPlayers[i]->GetCharacter())
-				((CGameContext *)(((CServer *)pSelf->Server())->GameServer()))->SendTuningParams(i, pSelf->m_apPlayers[i]->GetCharacter()->m_TuneZone);
-			return;
-		}
-	}
-
-	((CServer *)pSelf->Server())->m_NetServer.SetTimeoutProtected(pResult->m_ClientID);
-	str_copy(pPlayer->m_TimeoutCode, pResult->GetString(0), sizeof(pPlayer->m_TimeoutCode));
 }
 
 void CGameContext::ConSave(IConsole::IResult *pResult, void *pUserData)

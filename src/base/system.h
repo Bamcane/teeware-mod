@@ -470,14 +470,13 @@ int64 time_freq();
 */
 int time_timestamp();
 
-/* Group: Network General */
-typedef struct
-{
-	int type;
-	int ipv4sock;
-	int ipv6sock;
-	int web_ipv4sock;
-} NETSOCKET;
+/**
+ * @defgroup Network-General
+ */
+
+/**
+ * @ingroup Network-General
+ */
 
 enum
 {
@@ -487,16 +486,20 @@ enum
 	NETTYPE_IPV4 = 1,
 	NETTYPE_IPV6 = 2,
 	NETTYPE_LINK_BROADCAST = 4,
-	NETTYPE_WEBSOCKET_IPV4 = 8,
-	NETTYPE_ALL = NETTYPE_IPV4|NETTYPE_IPV6|NETTYPE_WEBSOCKET_IPV4
+	NETTYPE_ALL = NETTYPE_IPV4|NETTYPE_IPV6
 };
+typedef struct NETSOCKET_INTERNAL *NETSOCKET;
 
-typedef struct
+typedef struct NETADDR
 {
 	unsigned int type;
 	unsigned char ip[16];
 	unsigned short port;
+
+	bool operator==(const NETADDR &other) const;
+	bool operator!=(const NETADDR &other) const { return !(*this == other); }
 } NETADDR;
+
 
 /*
 	Function: net_init
@@ -536,6 +539,20 @@ int net_host_lookup(const char *hostname, NETADDR *addr, int types);
 */
 int net_addr_comp(const NETADDR *a, const NETADDR *b);
 
+/**
+ * Compares two network addresses ignoring port.
+ *
+ * @ingroup Network-General
+ *
+ * @param a Address to compare
+ * @param b Address to compare to.
+ *
+ * @return `< 0` - Address a is less than address b
+ * @return `0` - Address a is equal to address b
+ * @return `> 0` - Address a is greater than address b
+ */
+int net_addr_comp_noport(const NETADDR *a, const NETADDR *b);
+
 /*
 	Function: net_addr_str
 		Turns a network address into a representive string.
@@ -564,6 +581,19 @@ void net_addr_str(const NETADDR *addr, char *string, int max_length, int add_por
 		string - String to parse.
 */
 int net_addr_from_str(NETADDR *addr, const char *string);
+
+/*
+	Function: net_socket_type
+		Determine a socket's type.
+
+	Parameters:
+		sock - Socket whose type should be determined.
+
+	Returns:
+		The socket type, a bitset of `NETTYPE_IPV4`, `NETTYPE_IPV6` and
+		`NETTYPE_WEBSOCKET_IPV4`.
+*/
+int net_socket_type(NETSOCKET sock);
 
 /* Group: Network UDP */
 
@@ -598,19 +628,19 @@ int net_udp_send(NETSOCKET sock, const NETADDR *addr, const void *data, int size
 
 /*
 	Function: net_udp_recv
-		Recives a packet over an UDP socket.
+		Receives a packet over an UDP socket.
 
 	Parameters:
 		sock - Socket to use.
-		addr - Pointer to an NETADDR that will recive the address.
-		data - Pointer to a buffer that will recive the data.
-		maxsize - Maximum size to recive.
+		addr - Pointer to an NETADDR that will receive the address.
+		data - Received data. Will be invalidated when this function is
+		called again.
 
 	Returns:
-		On success it returns the number of bytes recived. Returns -1
+		On success it returns the number of bytes received. Returns -1
 		on error.
 */
-int net_udp_recv(NETSOCKET sock, NETADDR *addr, void *data, int maxsize);
+int net_udp_recv(NETSOCKET sock, NETADDR *addr, unsigned char **data);
 
 /*
 	Function: net_udp_close
@@ -1382,12 +1412,6 @@ int secure_random_init();
 		length - Length of the buffer.
 */
 void secure_random_fill(void *bytes, size_t length);
-
-/*
-	Function: secure_rand
-		Returns random int (replacement for rand()).
-*/
-int secure_rand();
 
 #ifdef __cplusplus
 }

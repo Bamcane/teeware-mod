@@ -136,6 +136,7 @@ public:
 		int m_Score;
 		int m_Authed;
 		int m_AuthTries;
+		int m_NextMapChunk;
 
 		const IConsole::CCommandInfo *m_pRconCmdToSend;
 
@@ -186,6 +187,8 @@ public:
 	bool m_ServerInfoHighLoad;
 	int64 m_ServerInfoFirstRequest;
 	int m_ServerInfoNumRequests;
+	int64_t m_ServerInfoRequestLogTick;
+	int m_ServerInfoRequestLogRecords;
 
 	CServer();
 
@@ -220,7 +223,6 @@ public:
 	int MaxClients() const;
 
 	virtual int SendMsg(CMsgPacker *pMsg, int Flags, int ClientID);
-	int SendMsgEx(CMsgPacker *pMsg, int Flags, int ClientID, bool System);
 
 	void DoSnapshot();
 
@@ -231,6 +233,8 @@ public:
 	static int ClientRejoinCallback(int ClientID, void *pUser);
 
 	void SendMap(int ClientID);
+	void SendMapData(int ClientID, int Chunk);
+	
 	void SendConnectionReady(int ClientID);
 	void SendRconLine(int ClientID, const char *pLine);
 	static void SendRconLineAuthed(const char *pLine, void *pUser, bool Highlighted = false);
@@ -241,11 +245,11 @@ public:
 
 	void ProcessClientPacket(CNetChunk *pPacket);
 
-	void SendServerInfoConnless(const NETADDR *pAddr, int Token, bool Extended);
-	void SendServerInfo(const NETADDR *pAddr, int Token, bool Extended=false, int Offset=0, bool Short=false);
+	void SendServerInfoConnless(const NETADDR *pAddr, int Token, int Type);
+	void SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool SendClients);
 	void UpdateServerInfo();
 
-	void PumpNetwork();
+	void PumpNetwork(bool PacketWaiting);
 
 	char *GetMapName();
 	int LoadMap(const char *pMapName);

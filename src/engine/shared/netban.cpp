@@ -410,7 +410,7 @@ bool CNetBan::IsBanned(const NETADDR *pOrigAddr, char *pBuf, unsigned BufferSize
 {
 	NETADDR addr;
 	const NETADDR *pAddr = pOrigAddr;
-	if (pOrigAddr->type == NETTYPE_WEBSOCKET_IPV4) {
+	if (pOrigAddr->type == NETTYPE_IPV4) {
 		mem_copy(&addr, pOrigAddr, sizeof(NETADDR));
 		pAddr = &addr;
 		addr.type = NETTYPE_IPV4;

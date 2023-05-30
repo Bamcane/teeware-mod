@@ -8,7 +8,7 @@ bool CNetClient::Open(NETADDR BindAddr, int Flags)
 	// open socket
 	NETSOCKET Socket;
 	Socket = net_udp_create(BindAddr);
-	if(!Socket.type)
+	if(!m_Socket)
 		return false;
 
 	// clean it
@@ -42,9 +42,9 @@ int CNetClient::Update()
 	return 0;
 }
 
-int CNetClient::Connect(NETADDR *pAddr)
+int CNetClient::Connect(const NETADDR *pAddr, int NumAddrs)
 {
-	m_Connection.Connect(pAddr);
+	m_Connection.Connect(pAddr, NumAddrs);
 	return 0;
 }
 
@@ -64,27 +64,32 @@ int CNetClient::Recv(CNetChunk *pChunk)
 
 		// TODO: empty the recvinfo
 		NETADDR Addr;
-		int Bytes = net_udp_recv(m_Socket, &Addr, m_RecvUnpacker.m_aBuffer, NET_MAX_PACKETSIZE);
+		unsigned char *pData;
+		int Bytes = net_udp_recv(m_Socket, &Addr, &pData);
 
 		// no more packets for now
 		if(Bytes <= 0)
 			break;
 
-		if(CNetBase::UnpackPacket(m_RecvUnpacker.m_aBuffer, Bytes, &m_RecvUnpacker.m_Data) == 0)
+		if(CNetBase::UnpackPacket(pData, Bytes, &m_RecvUnpacker.m_Data) == 0)
 		{
-			if(m_RecvUnpacker.m_Data.m_Flags&NET_PACKETFLAG_CONNLESS)
+			if(m_RecvUnpacker.m_Data.m_Flags & NET_PACKETFLAG_CONNLESS)
 			{
 				pChunk->m_Flags = NETSENDFLAG_CONNLESS;
 				pChunk->m_ClientID = -1;
 				pChunk->m_Address = Addr;
 				pChunk->m_DataSize = m_RecvUnpacker.m_Data.m_DataSize;
 				pChunk->m_pData = m_RecvUnpacker.m_Data.m_aChunkData;
+				if(m_RecvUnpacker.m_Data.m_Flags & NET_PACKETFLAG_EXTENDED)
+				{
+					pChunk->m_Flags |= NETSENDFLAG_EXTENDED;
+					mem_copy(pChunk->m_aExtraData, m_RecvUnpacker.m_Data.m_aExtraData, sizeof(pChunk->m_aExtraData));
+				}
 				return 1;
 			}
 			else
 			{
-				if(m_Connection.State() != NET_CONNSTATE_OFFLINE && m_Connection.State() != NET_CONNSTATE_ERROR && net_addr_comp(m_Connection.PeerAddress(), &Addr) == 0
-					&& m_Connection.Feed(&m_RecvUnpacker.m_Data, &Addr))
+				if(m_Connection.State() != NET_CONNSTATE_OFFLINE && m_Connection.State() != NET_CONNSTATE_ERROR && m_Connection.Feed(&m_RecvUnpacker.m_Data, &Addr))
 					m_RecvUnpacker.Start(&Addr, &m_Connection, 0);
 			}
 		}
@@ -103,7 +108,8 @@ int CNetClient::Send(CNetChunk *pChunk)
 	if(pChunk->m_Flags&NETSENDFLAG_CONNLESS)
 	{
 		// send connectionless packet
-		CNetBase::SendPacketConnless(m_Socket, &pChunk->m_Address, pChunk->m_pData, pChunk->m_DataSize);
+		CNetBase::SendPacketConnless(m_Socket, &pChunk->m_Address, pChunk->m_pData, pChunk->m_DataSize,
+			pChunk->m_Flags & NETSENDFLAG_EXTENDED, pChunk->m_aExtraData);
 	}
 	else
 	{
