@@ -599,13 +599,16 @@ int CNetServer::Recv(CNetChunk *pChunk, SECURITY_TOKEN *pResponseToken)
 				else
 				{
 					// not found, client that wants to connect
-
 					if(IsDDNetControlMsg(&m_RecvUnpacker.m_Data))
+					{
 						// got ddnet control msg
 						OnTokenCtrlMsg(Addr, m_RecvUnpacker.m_Data.m_aChunkData[0], m_RecvUnpacker.m_Data);
+					}
 					else
+					{
 						// got connection-less ctrl or sys msg
 						OnPreConnMsg(Addr, m_RecvUnpacker.m_Data);
+					}
 				}
 			}
 		}

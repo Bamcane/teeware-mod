@@ -1455,8 +1455,6 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 		}
 		else
 		{
-			char aNameBuf[64];
-			str_format(aNameBuf, sizeof(aNameBuf), "%s [%d/%d]", g_Config.m_SvName, ClientCount, m_NetServer.MaxClients());
 			p.AddString(g_Config.m_SvName, 64);
 		}
 	}

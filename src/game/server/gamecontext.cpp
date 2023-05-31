@@ -1009,7 +1009,8 @@ void CGameContext::OnClientEnter(int ClientID)
 		str_copy(m_apPlayers[ClientID]->original_skin, m_apPlayers[ClientID]->m_TeeInfos.m_SkinName, sizeof(m_apPlayers[ClientID]->original_skin));
 		m_apPlayers[ClientID]->original_color = m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor;
 		m_apPlayers[ClientID]->original_body_color = m_apPlayers[ClientID]->m_TeeInfos.m_ColorBody;
-		SendChatTarget(ClientID, "TeeWare v1.1 模式由Headshot制作(RemakePower翻译+修改)");
+		SendChatTarget(ClientID, "TeeWare v1.1 由Headshot制作");
+		SendChatTarget(ClientID, "TeeWare v1.2 由RemakePower添改");
 
 		if(g_Config.m_SvWelcome[0]!=0)
 			SendChatTarget(ClientID,g_Config.m_SvWelcome);
