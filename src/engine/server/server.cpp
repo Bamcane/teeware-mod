@@ -1455,7 +1455,9 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 		}
 		else
 		{
-			p.AddString(g_Config.m_SvName, 64);
+			const int MaxClients = max(ClientCount, m_NetServer.MaxClients() - g_Config.m_SvReservedSlots);
+			str_format(aBuf, sizeof(aBuf), "%s [%d/%d]", g_Config.m_SvName, ClientCount, MaxClients);
+			p.AddString(aBuf, 64);
 		}
 	}
 	p.AddString(pMapName, 32);
@@ -1473,6 +1475,9 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 	ADD_INT(p, g_Config.m_Password[0] ? SERVER_FLAG_PASSWORD : 0);
 
 	int MaxClients = m_NetServer.MaxClients();
+	// How many clients the used serverinfo protocol supports, has to be tracked
+	// separately to make sure we don't subtract the reserved slots from it
+	int MaxClientsProtocol = MAX_CLIENTS;
 	if(Type == SERVERINFO_VANILLA || Type == SERVERINFO_INGAME)
 	{
 		if(ClientCount >= VANILLA_MAX_CLIENTS)
@@ -1482,16 +1487,15 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 			else
 				ClientCount = VANILLA_MAX_CLIENTS;
 		}
-		if(MaxClients > VANILLA_MAX_CLIENTS)
-			MaxClients = VANILLA_MAX_CLIENTS;
+		MaxClientsProtocol = VANILLA_MAX_CLIENTS;
 		if(PlayerCount > ClientCount)
 			PlayerCount = ClientCount;
 	}
 
 	ADD_INT(p, PlayerCount); // num players
-	ADD_INT(p, MaxClients-g_Config.m_SvSpectatorSlots); // max players
+	ADD_INT(p, min(MaxClientsProtocol, max(MaxClients - g_Config.m_SvSpectatorSlots, PlayerCount))); // max players
 	ADD_INT(p, ClientCount); // num clients
-	ADD_INT(p, MaxClients); // max clients
+	ADD_INT(p, min(MaxClientsProtocol, max(MaxClients - g_Config.m_SvSpectatorSlots, ClientCount))); // max clients
 
 	if(Type == SERVERINFO_EXTENDED)
 		p.AddString("", 0); // extra info, reserved
@@ -1499,7 +1503,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 	const void *pPrefix = p.Data();
 	int PrefixSize = p.Size();
 
-	CPacker pp;
+	CPacker q;
 	CNetChunk Packet;
 	int PacketsSent = 0;
 	int PlayersSent = 0;
@@ -1510,7 +1514,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 	#define SEND(size) \
 		do \
 		{ \
-			Packet.m_pData = pp.Data(); \
+			Packet.m_pData = q.Data(); \
 			Packet.m_DataSize = size; \
 			m_NetServer.Send(&Packet); \
 			PacketsSent++; \
@@ -1519,25 +1523,25 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 	#define RESET() \
 		do \
 		{ \
-			pp.Reset(); \
-			pp.AddRaw(pPrefix, PrefixSize); \
+			q.Reset(); \
+			q.AddRaw(pPrefix, PrefixSize); \
 		} while(0)
 
 	RESET();
 
 	if(Type == SERVERINFO_64_LEGACY)
-		pp.AddInt(PlayersSent); // offset
+		q.AddInt(PlayersSent); // offset
 
 	if(!SendClients)
 	{
-		SEND(pp.Size());
+		SEND(q.Size());
 		return;
 	}
 
 	if(Type == SERVERINFO_EXTENDED)
 	{
-		pPrefix = SERVERBROWSE_INFO_EXTENDED_MORE;
-		PrefixSize = sizeof(SERVERBROWSE_INFO_EXTENDED_MORE);
+		pPrefix = "";
+		PrefixSize = 0;
 	}
 
 	int Remaining;
@@ -1559,20 +1563,15 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 	{
 		if(m_aClients[i].m_State != CClient::STATE_EMPTY)
 		{
-			if(ClientCount == 0)
-				break;
-
-			--ClientCount;
-
 			if(Remaining == 0)
 			{
 				if(Type == SERVERINFO_VANILLA || Type == SERVERINFO_INGAME)
 					break;
 
 				// Otherwise we're SERVERINFO_64_LEGACY.
-				SEND(pp.Size());
+				SEND(q.Size());
 				RESET();
-				pp.AddInt(PlayersSent); // offset
+				q.AddInt(PlayersSent); // offset
 				Remaining = 24;
 			}
 			if(Remaining > 0)
@@ -1580,28 +1579,27 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 				Remaining--;
 			}
 
-			int PreviousSize = pp.Size();
+			int PreviousSize = q.Size();
 
-			pp.AddString(ClientName(i), MAX_NAME_LENGTH); // client name
-			pp.AddString(ClientClan(i), MAX_CLAN_LENGTH); // client clan
+			q.AddString(ClientName(i), MAX_NAME_LENGTH); // client name
+			q.AddString(ClientClan(i), MAX_CLAN_LENGTH); // client clan
 
-			ADD_INT(pp, m_aClients[i].m_Country); // client country
-			ADD_INT(pp, m_aClients[i].m_Score); // client score
-			ADD_INT(pp, GameServer()->IsClientPlayer(i) ? 1 : 0); // is player?
+			ADD_INT(q, m_aClients[i].m_Country); // client country
+			ADD_INT(q, m_aClients[i].m_Score); // client score
+			ADD_INT(q, GameServer()->IsClientPlayer(i) ? 1 : 0); // is player?
 			if(Type == SERVERINFO_EXTENDED)
-				pp.AddString("", 0); // extra info, reserved
+				q.AddString("", 0); // extra info, reserved
 
 			if(Type == SERVERINFO_EXTENDED)
 			{
-				if(pp.Size() >= NET_MAX_PAYLOAD)
+				if(q.Size() >= NET_MAX_PAYLOAD - 18) // 8 bytes for type, 10 bytes for the largest token
 				{
 					// Retry current player.
 					i--;
 					SEND(PreviousSize);
 					RESET();
-					ADD_INT(pp, Token);
-					ADD_INT(pp, PacketsSent);
-					pp.AddString("", 0); // extra info, reserved
+					ADD_INT(q, PlayersSent);
+					q.AddString("", 0); // extra info, reserved
 					continue;
 				}
 			}
@@ -1609,7 +1607,7 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 		}
 	}
 
-	SEND(pp.Size());
+	SEND(q.Size());
 	#undef SEND
 	#undef RESET
 	#undef ADD_RAW
@@ -1626,7 +1624,6 @@ void CServer::UpdateServerInfo()
 		}
 	}
 }
-
 
 void CServer::PumpNetwork(bool PacketWaiting)
 {
