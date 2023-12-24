@@ -1010,7 +1010,8 @@ void CGameContext::OnClientEnter(int ClientID)
 		m_apPlayers[ClientID]->original_color = m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor;
 		m_apPlayers[ClientID]->original_body_color = m_apPlayers[ClientID]->m_TeeInfos.m_ColorBody;
 		SendChatTarget(ClientID, "TeeWare v1.1 由Headshot制作");
-		SendChatTarget(ClientID, "TeeWare v1.2 由RemakePower添改");
+		SendChatTarget(ClientID, "TeeWare v1.2.1 由甘竹Bamcane添改");
+		SendChatTarget(ClientID, "当前版本压缩了地图, 如果有任何问题请汇报github");
 
 		if(g_Config.m_SvWelcome[0]!=0)
 			SendChatTarget(ClientID,g_Config.m_SvWelcome);
