@@ -3,6 +3,7 @@
 #ifndef ENGINE_SHARED_DATAFILE_H
 #define ENGINE_SHARED_DATAFILE_H
 
+#include <base/hash.h>
 // raw datafile access
 class CDataFileReader
 {
@@ -33,6 +34,7 @@ public:
 	void Unload();
 
 	unsigned Crc();
+	SHA256_DIGEST Sha256() const;
 };
 
 // write access

@@ -125,7 +125,7 @@ SECURITY_TOKEN CNetServer::GetToken(const NETADDR &Addr)
 	md5_append(&md5, (unsigned char*)m_SecurityTokenSeed, sizeof(m_SecurityTokenSeed));
 	md5_append(&md5, (unsigned char*)&Addr, sizeof(Addr));
 
-	md5_finish(&md5, digest);
+	md5_finish_(&md5, digest);
 	SecurityToken = ToSecurityToken(digest);
 
 	if (SecurityToken == NET_SECURITY_TOKEN_UNKNOWN ||

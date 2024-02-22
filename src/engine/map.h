@@ -4,6 +4,7 @@
 #define ENGINE_MAP_H
 
 #include "kernel.h"
+#include <base/hash.h>
 
 class IMap : public IInterface
 {
@@ -29,6 +30,7 @@ public:
 	virtual bool IsLoaded() = 0;
 	virtual void Unload() = 0;
 	virtual unsigned Crc() = 0;
+	virtual SHA256_DIGEST Sha256() const = 0;
 };
 
 extern IEngineMap *CreateEngineMap();

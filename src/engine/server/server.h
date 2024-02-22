@@ -3,6 +3,8 @@
 #ifndef ENGINE_SERVER_SERVER_H
 #define ENGINE_SERVER_SERVER_H
 
+#include <base/hash.h>
+
 #include <engine/server.h>
 
 #include <engine/map.h>
@@ -173,6 +175,7 @@ public:
 
 	char m_aCurrentMap[64];
 	unsigned m_CurrentMapCrc;
+	SHA256_DIGEST m_CurrentMapSha256;
 	unsigned char *m_pCurrentMapData;
 	unsigned int m_CurrentMapSize;
 
@@ -299,6 +302,9 @@ public:
 	void RestrictRconOutput(int ClientID) { m_RconRestrict = ClientID; }
 
 	virtual int* GetIdMap(int ClientID);
+
+	// DDNet
+	void SendCapabilities(int ClientID);
 };
 
 #endif

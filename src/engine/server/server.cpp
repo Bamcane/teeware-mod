@@ -33,6 +33,9 @@
 #include <engine/shared/linereader.h>
 #include <game/server/gamecontext.h>
 
+// DDNet
+#include <engine/shared/uuid.h>
+
 #include "register.h"
 #include "server.h"
 
@@ -573,112 +576,47 @@ void CServer::InitRconPasswordIfEmpty()
 	m_GeneratedRconPassword = 1;
 }
 
-static inline bool RepackMsg(const CMsgPacker *pMsg, CPacker &Packer, bool Sixup)
-{
-	int MsgId = pMsg->m_MsgID;
-	Packer.Reset();
-
-	if(false && !pMsg->m_NoTranslate)
-	{
-		if(pMsg->m_System)
-		{
-			if(MsgId >= (1 << 16))
-				;
-			else if(MsgId >= NETMSG_MAP_CHANGE && MsgId <= NETMSG_MAP_DATA)
-				;
-			else if(MsgId >= NETMSG_CON_READY && MsgId <= NETMSG_INPUTTIMING)
-				MsgId += 1;
-			else if(MsgId == NETMSG_RCON_LINE)
-				MsgId = 13;
-			else if(MsgId >= NETMSG_AUTH_CHALLANGE && MsgId <= NETMSG_AUTH_RESULT)
-				MsgId += 4;
-			else if(MsgId >= NETMSG_PING && MsgId <= NETMSG_ERROR)
-				MsgId += 4;
-			else if(MsgId >= NETMSG_RCON_CMD_ADD && MsgId <= NETMSG_RCON_CMD_REM)
-				MsgId -= 11;
-			else
-			{
-				dbg_msg("net", "DROP send sys %d", MsgId);
-				return true;
-			}
-		}
-		else
-		{
-
-			if(MsgId < 0)
-				return true;
-		}
-	}
-
-	if(MsgId < (1 << 16))
-	{
-		Packer.AddInt((MsgId << 1) | (pMsg->m_System ? 1 : 0));
-	}
-	else
-	{
-		Packer.AddInt((0 << 1) | (pMsg->m_System ? 1 : 0)); // NETMSG_EX, NETMSGTYPE_EX
-	}
-	Packer.AddRaw(pMsg->Data(), pMsg->Size());
-
-	return false;
-}
-
 int CServer::SendMsg(CMsgPacker *pMsg, int Flags, int ClientID)
 {
 	CNetChunk Packet;
+	if(!pMsg)
+		return -1;
+
 	mem_zero(&Packet, sizeof(CNetChunk));
-	if(Flags & MSGFLAG_VITAL)
+
+	Packet.m_ClientID = ClientID;
+	Packet.m_pData = pMsg->Data();
+	Packet.m_DataSize = pMsg->Size();
+
+	if(Flags&MSGFLAG_VITAL)
 		Packet.m_Flags |= NETSENDFLAG_VITAL;
-	if(Flags & MSGFLAG_FLUSH)
+	if(Flags&MSGFLAG_FLUSH)
 		Packet.m_Flags |= NETSENDFLAG_FLUSH;
 
-	if(ClientID < 0)
+	// write message to demo recorder
+	if(!(Flags&MSGFLAG_NORECORD))
 	{
-		CPacker Pack6;
-		if(RepackMsg(pMsg, Pack6, false))
-			return -1;
+		if(ClientID > -1)
+			m_aDemoRecorder[ClientID].RecordMessage(pMsg->Data(), pMsg->Size());
+		m_aDemoRecorder[MAX_CLIENTS].RecordMessage(pMsg->Data(), pMsg->Size());
+	}
 
-		// write message to demo recorders
-		if(!(Flags & MSGFLAG_NORECORD))
+	if(!(Flags&MSGFLAG_NOSEND))
+	{
+		if(ClientID == -1)
 		{
-			m_aDemoRecorder[MAX_CLIENTS].RecordMessage(Pack6.Data(), Pack6.Size());
-		}
-
-		if(!(Flags & MSGFLAG_NOSEND))
-		{
-			for(int i = 0; i < MAX_CLIENTS; i++)
-			{
+			// broadcast
+			int i;
+			for(i = 0; i < MAX_CLIENTS; i++)
 				if(m_aClients[i].m_State == CClient::STATE_INGAME)
 				{
-					CPacker *pPack = &Pack6;
-					Packet.m_pData = pPack->Data();
-					Packet.m_DataSize = pPack->Size();
 					Packet.m_ClientID = i;
 					m_NetServer.Send(&Packet);
 				}
-			}
 		}
-	}
-	else
-	{
-		CPacker Pack;
-		if(RepackMsg(pMsg, Pack, 0))
-			return -1;
-
-		Packet.m_ClientID = ClientID;
-		Packet.m_pData = Pack.Data();
-		Packet.m_DataSize = Pack.Size();
-
-		// write message to demo recorders
-		if(!(Flags & MSGFLAG_NORECORD))
-		{
-			m_aDemoRecorder[MAX_CLIENTS].RecordMessage(Pack.Data(), Pack.Size());
-		}
-
-		if(!(Flags & MSGFLAG_NOSEND))
+		else
 			m_NetServer.Send(&Packet);
 	}
-
 	return 0;
 }
 
@@ -858,6 +796,7 @@ int CServer::NewClientNoAuthCallback(int ClientID, bool Reset, void *pUser)
 		pThis->m_aClients[ClientID].Reset();
 	}
 
+	pThis->SendCapabilities(ClientID);
 	pThis->SendMap(ClientID);
 
 	return 0;
@@ -910,6 +849,17 @@ int CServer::DelClientCallback(int ClientID, const char *pReason, void *pUser)
 
 void CServer::SendMap(int ClientID)
 {
+	// DDNet message NETMSG_MAP_DETAILS
+	CMsgPacker MsgDDNet(0, true, false);
+	CUuid Uuid = CalculateUuid("map-details@ddnet.tw");
+	MsgDDNet.AddRaw(&Uuid, sizeof(Uuid));
+	MsgDDNet.AddString(GetMapName(), 0);
+	MsgDDNet.AddRaw(&m_CurrentMapSha256.data, sizeof(m_CurrentMapSha256.data));
+	MsgDDNet.AddInt(m_CurrentMapCrc);
+	MsgDDNet.AddInt(m_CurrentMapSize);
+	MsgDDNet.AddString("", 0); // HTTPS map download URL
+	SendMsg(&MsgDDNet, MSGFLAG_VITAL|MSGFLAG_NORECORD, ClientID);
+
 	CMsgPacker Msg(NETMSG_MAP_CHANGE, true);
 	Msg.AddString(GetMapName(), 0);
 	Msg.AddInt(m_CurrentMapCrc);
@@ -1087,6 +1037,7 @@ void CServer::ProcessClientPacket(CNetChunk *pPacket)
 				}
 
 				m_aClients[ClientID].m_State = CClient::STATE_CONNECTING;
+				SendCapabilities(ClientID);
 				SendMap(ClientID);
 			}
 		}
@@ -1729,9 +1680,14 @@ int CServer::LoadMap(const char *pMapName)
 
 	// get the crc of the map
 	m_CurrentMapCrc = m_pMap->Crc();
+	m_CurrentMapSha256 = m_pMap->Sha256();
+
 	char aBufMsg[256];
-	str_format(aBufMsg, sizeof(aBufMsg), "%s crc is %08x", aBuf, m_CurrentMapCrc);
+	char aSha256[SHA256_MAXSTRSIZE];
+	sha256_str(m_CurrentMapSha256, aSha256, sizeof(aSha256));
+	str_format(aBufMsg, sizeof(aBufMsg), "%s sha256 is %s", aBuf, aSha256);
 	Console()->Print(IConsole::OUTPUT_LEVEL_ADDINFO, "server", aBufMsg);
+
 
 	str_copy(m_aCurrentMap, pMapName, sizeof(m_aCurrentMap));
 	//map_set(df);
@@ -2463,4 +2419,26 @@ char *CServer::GetAnnouncementLine(char const *pFileName)
 int* CServer::GetIdMap(int ClientID)
 {
 	return (int*)(IdMap + VANILLA_MAX_CLIENTS * ClientID);
+}
+
+// DDNet
+enum
+{
+	SERVERCAP_CURVERSION = 5,
+	SERVERCAPFLAG_DDNET = 1 << 0,
+	SERVERCAPFLAG_CHATTIMEOUTCODE = 1 << 1,
+	SERVERCAPFLAG_ANYPLAYERFLAG = 1 << 2,
+	SERVERCAPFLAG_PINGEX = 1 << 3,
+	SERVERCAPFLAG_ALLOWDUMMY = 1 << 4,
+	SERVERCAPFLAG_SYNCWEAPONINPUT = 1 << 5,
+};
+
+void CServer::SendCapabilities(int ClientID)
+{
+	CMsgPacker Msg(0, true, false);
+	CUuid Uuid = CalculateUuid("capabilities@ddnet.tw");
+    Msg.AddRaw(&Uuid, sizeof(Uuid));
+	Msg.AddInt(SERVERCAP_CURVERSION); // version
+	Msg.AddInt(SERVERCAPFLAG_DDNET); // flags no dummy
+	SendMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, ClientID);
 }

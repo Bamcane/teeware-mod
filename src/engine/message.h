@@ -15,6 +15,12 @@ public:
 		m_MsgID(Type), m_System(System), m_NoTranslate(NoTranslate)
 	{
 		Reset();
+		if(Type < 0 || Type > 0x3FFFFFFF)
+		{
+			return;
+		}
+		
+		AddInt((Type << 1) | (System ? 1 : 0));
 	}
 };
 

@@ -55,7 +55,8 @@ void MGNinjaSurvival::End()
 
 void MGNinjaSurvival::Tick()
 {
-	for (int i=0; i<MAX_CLIENTS; i++)
+	// ignore ninja
+	for (int i = 0; i < MAX_CLIENTS - 1; i ++)
 	{
 		CCharacter *Char = GameServer()->GetPlayerChar(i);
 		if (not Char) continue;

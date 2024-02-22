@@ -33,6 +33,10 @@ bam.exe
 *.dll
 *.coff
 
+.ninja_deps
+.ninja_log
+build.ninja
+
 TeeWare-Server*
 
 compile_commands.json
