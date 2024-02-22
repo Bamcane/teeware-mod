@@ -857,7 +857,7 @@ void CServer::SendMap(int ClientID)
 	MsgDDNet.AddRaw(&m_CurrentMapSha256.data, sizeof(m_CurrentMapSha256.data));
 	MsgDDNet.AddInt(m_CurrentMapCrc);
 	MsgDDNet.AddInt(m_CurrentMapSize);
-	MsgDDNet.AddString("", 0); // HTTPS map download URL
+	MsgDDNet.AddString(g_Config.m_SvMapDownloadUrl, 0); // HTTPS map download URL
 	SendMsg(&MsgDDNet, MSGFLAG_VITAL|MSGFLAG_NORECORD, ClientID);
 
 	CMsgPacker Msg(NETMSG_MAP_CHANGE, true);
