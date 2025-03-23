@@ -239,9 +239,9 @@ public:
 	virtual bool IsClientReady(int ClientID);
 	virtual bool IsClientPlayer(int ClientID);
 
-	virtual const char *GameType();
-	virtual const char *Version();
-	virtual const char *NetVersion();
+	virtual const char *GameType() const;
+	virtual const char *Version() const;
+	virtual const char *NetVersion() const;
 
 	// DDRace
 
@@ -398,6 +398,8 @@ public:
 
 	int m_ChatResponseTargetID;
 	int m_ChatPrintCBIndex;
+
+	void OnUpdatePlayerServerInfo(class CJsonStringWriter *pJSonWriter, int Id) override;
 };
 
 inline int64_t CmaskAll() { return -1LL; }

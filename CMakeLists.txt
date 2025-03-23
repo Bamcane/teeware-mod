@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.8)
 
 file(STRINGS src/game/version.h VERSION_LINE
   LIMIT_COUNT 1
-  REGEX GAME_RELEASE_VERSION
+  REGEX "^#define GAME_RELEASE_VERSION "
 )
 
-if(VERSION_LINE MATCHES "\"([0-9]+)\\.([0-9]+)\\.([0-9]+)\"")
+if(VERSION_LINE MATCHES "\"([0-9]+)\\.([0-9]+)\\.([0-9]+|[0-9]+\\.[0-9]+)\"")
   set(VERSION_MAJOR ${CMAKE_MATCH_1})
   set(VERSION_MINOR ${CMAKE_MATCH_2})
   set(VERSION_PATCH ${CMAKE_MATCH_3})
@@ -78,9 +78,9 @@ option(LOCALIZE "Generate localize" OFF)
 # Set the default build type to Release
 if(NOT(CMAKE_BUILD_TYPE))
   if(DEV)
-    set(CMAKE_BUILD_TYPE Release)
-  else()
     set(CMAKE_BUILD_TYPE Debug)
+  else()
+    set(CMAKE_BUILD_TYPE Release)
   endif()
 endif()
 
@@ -252,7 +252,10 @@ if(NOT CMAKE_CROSSCOMPILING)
 endif()
 find_package(ZLIB)
 find_package(Git)
-find_package(PythonInterp)
+find_package(GTest)
+find_package(Threads)
+find_package(Python3)
+find_package(Curl)
 
 
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
@@ -292,6 +295,7 @@ function(show_dependency_status OUTPUT_NAME NAME)
   endif()
 endfunction()
 
+show_dependency_status("Curl" CURL)
 if(TARGET_OS AND TARGET_OS STREQUAL "mac")
   show_dependency_status("Dmg tools" DMGTOOLS)
 endif()
@@ -301,7 +305,10 @@ endif()
 show_dependency_status("PythonInterp" PYTHONINTERP)
 show_dependency_status("Zlib" ZLIB)
 
-if(NOT(PYTHONINTERP_FOUND))
+if(NOT(CURL_FOUND))
+  message(SEND_ERROR "You must install Curl to compile Teeworlds Carbon")
+endif()
+if(NOT(Python3_FOUND))
   message(SEND_ERROR "You must install Python to compile Teeworlds")
 endif()
 
@@ -328,13 +335,17 @@ endif()
 # DEPENDENCY COMPILATION
 ########################################################################
 
+set_glob(DEP_JSON_SRC GLOB src/engine/external/json-parser json.c json.h)
+add_library(json EXCLUDE_FROM_ALL OBJECT ${DEP_JSON_SRC})
+
 set_glob(DEP_MD5_SRC GLOB src/engine/external/md5 md5.c md5.h)
 add_library(md5 EXCLUDE_FROM_ALL OBJECT ${DEP_MD5_SRC})
 
 set_glob(DEP_PNGLITE_SRC GLOB src/engine/external/pnglite pnglite.c pnglite.h)
 add_library(pnglite EXCLUDE_FROM_ALL OBJECT ${DEP_PNGLITE_SRC})
 
-list(APPEND TARGETS_DEP md5 pnglite)
+list(APPEND TARGETS_DEP json md5 pnglite)
+set(DEP_JSON $<TARGET_OBJECTS:json>)
 set(DEP_MD5 $<TARGET_OBJECTS:md5>)
 set(DEP_PNGLITE $<TARGET_OBJECTS:pnglite>)
 
@@ -344,7 +355,7 @@ set(DEP_PNGLITE $<TARGET_OBJECTS:pnglite>)
 
 function(chash output_file)
   add_custom_command(OUTPUT ${output_file}
-    COMMAND ${PYTHON_EXECUTABLE} scripts/cmd5.py ${ARGN}
+    COMMAND ${Python3_EXECUTABLE} scripts/cmd5.py ${ARGN}
       > "${PROJECT_BINARY_DIR}/${output_file}"
     DEPENDS scripts/cmd5.py ${ARGN}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
@@ -353,7 +364,7 @@ endfunction()
 
 function(generate_source output_file script_parameter)
   add_custom_command(OUTPUT ${output_file}
-    COMMAND ${PYTHON_EXECUTABLE} datasrc/compile.py ${script_parameter}
+    COMMAND ${Python3_EXECUTABLE} datasrc/compile.py ${script_parameter}
       > "${PROJECT_BINARY_DIR}/${output_file}"
     DEPENDS
       datasrc/compile.py
@@ -406,13 +417,14 @@ set(GAME_GENERATED_SHARED
   src/game/generated/protocol.h
 )
 
-set(DEPS ${DEP_MD5} ${DEP_PNGLITE} ${ZLIB_DEP})
+set(DEPS ${DEP_JSON} ${DEP_MD5} ${DEP_PNGLITE} ${ZLIB_DEP})
 
 # Libraries
-set(LIBS
+set(LIBS 
   ${CMAKE_THREAD_LIBS_INIT}
-  ${CRYPTO_LIBRARIES}
   ${ZLIB_LIBRARIES}
+  ${CRYPTO_LIBRARIES} 
+  ${CURL_LIBRARIES}
   ${PLATFORM_LIBS}
 )
 
@@ -541,6 +553,7 @@ foreach(target ${TARGETS_LINK})
   if(TARGET_OS STREQUAL "mac")
     target_link_libraries(${target} -stdlib=libc++)
     target_link_libraries(${target} -mmacosx-version-min=10.7)
+    target_link_libraries(${target} "-framework SystemConfiguration") # Required by curl 7.79.0
   endif()
   if((MINGW OR TARGET_OS STREQUAL "linux") AND PREFER_BUNDLED_LIBS)
     # Statically link the standard libraries with on MinGW/Linux so we don't

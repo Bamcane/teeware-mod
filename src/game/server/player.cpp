@@ -319,7 +319,7 @@ void CPlayer::Snap(int SnappingClient)
 		pClientInfo->m_ColorFeet = m_TeeInfos.m_ColorFeet;
 	} else
 	{
-		StrToInts(&pClientInfo->m_Skin0, 6, m_TeeInfos.m_SkinName);
+		StrToInts(&pClientInfo->m_Skin0, 6, m_TeeInfos.m_aSkinName);
 		pClientInfo->m_UseCustomColor = m_TeeInfos.m_UseCustomColor;
 		pClientInfo->m_ColorBody = m_TeeInfos.m_ColorBody;
 		pClientInfo->m_ColorFeet = m_TeeInfos.m_ColorFeet;
@@ -374,7 +374,7 @@ void CPlayer::FakeSnap(int SnappingClient)
 
 	StrToInts(&pClientInfo->m_Name0, 4, " ");
 	StrToInts(&pClientInfo->m_Clan0, 3, Server()->ClientClan(m_ClientID));
-	StrToInts(&pClientInfo->m_Skin0, 6, m_TeeInfos.m_SkinName);
+	StrToInts(&pClientInfo->m_Skin0, 6, m_TeeInfos.m_aSkinName);
 }
 
 void CPlayer::OnDisconnect(const char *pReason)
@@ -547,6 +547,8 @@ void CPlayer::SetTeam(int Team, bool DoChatMsg)
 				GameServer()->m_apPlayers[i]->m_SpectatorID = SPEC_FREEVIEW;
 		}
 	}
+
+	Server()->ExpireServerInfo();
 }
 
 void CPlayer::TryRespawn()
@@ -717,7 +719,7 @@ void CPlayer::FindDuplicateSkins()
 			if ((GameServer()->m_apPlayers[i]->m_TeeInfos.m_UseCustomColor == m_TeeInfos.m_UseCustomColor) &&
 			(GameServer()->m_apPlayers[i]->m_TeeInfos.m_ColorFeet == m_TeeInfos.m_ColorFeet) &&
 			(GameServer()->m_apPlayers[i]->m_TeeInfos.m_ColorBody == m_TeeInfos.m_ColorBody) &&
-			!str_comp(GameServer()->m_apPlayers[i]->m_TeeInfos.m_SkinName, m_TeeInfos.m_SkinName))
+			!str_comp(GameServer()->m_apPlayers[i]->m_TeeInfos.m_aSkinName, m_TeeInfos.m_aSkinName))
 			{
 				m_StolenSkin = 1;
 				return;

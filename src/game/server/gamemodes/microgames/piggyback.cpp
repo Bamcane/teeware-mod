@@ -55,7 +55,7 @@ void MGPiggyback::Start()
 		CCharacter *Char = GameServer()->GetPlayerChar(player);
 		Char->m_ForcedTuneZone = 4; // no, it won't crash here. see above on the online vector; this is guaranteed an online player
 
-		str_copy(Player->m_TeeInfos.m_SkinName, "twintri", sizeof(Player->m_TeeInfos.m_SkinName));
+		str_copy(Player->m_TeeInfos.m_aSkinName, "twintri", sizeof(Player->m_TeeInfos.m_aSkinName));
 		Player->m_TeeInfos.m_UseCustomColor = 0;
 
 		GameServer()->SendBroadcast("不要让背上有3只猪!\n          (向右跑)          ", player); // centered text hack
@@ -72,7 +72,7 @@ void MGPiggyback::Start()
 		m_pinkys.push_back(player);
 
 		CPlayer *Player = GameServer()->m_apPlayers[player];
-		str_copy(Player->m_TeeInfos.m_SkinName, "pinky", sizeof(Player->m_TeeInfos.m_SkinName));
+		str_copy(Player->m_TeeInfos.m_aSkinName, "pinky", sizeof(Player->m_TeeInfos.m_aSkinName));
 		Player->m_TeeInfos.m_UseCustomColor = 0;
 
 		GameServer()->SendBroadcast("让绿tee背上你们!", player);
@@ -92,7 +92,7 @@ void MGPiggyback::End()
 		if (Player) // revert skin
 		{
 			Player->SetInfoLock(false);
-			str_copy(Player->m_TeeInfos.m_SkinName, Player->original_skin, sizeof(Player->m_TeeInfos.m_SkinName));
+			str_copy(Player->m_TeeInfos.m_aSkinName, Player->original_skin, sizeof(Player->m_TeeInfos.m_aSkinName));
 			Player->m_TeeInfos.m_UseCustomColor = Player->original_color;
 		}
 

@@ -64,4 +64,7 @@ enum
 	SERVERINFO_EXTENDED_MORE,
 	SERVERINFO_INGAME,
 };
-#endif
+
+static const unsigned char SERVERBROWSE_CHALLENGE[] = {255, 255, 255, 255, 'c', 'h', 'a', 'l'};
+
+#endif // ENGINE_SHARED_MASTERSERVER_H

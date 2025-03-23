@@ -165,6 +165,7 @@ public:
 	virtual void GetClientAddr(int ClientID, NETADDR *pAddr) = 0;
 
 	virtual int* GetIdMap(int ClientID) = 0;
+	virtual void ExpireServerInfo() = 0;
 };
 
 class IGameServer : public IInterface
@@ -193,13 +194,21 @@ public:
 	virtual bool IsClientReady(int ClientID) = 0;
 	virtual bool IsClientPlayer(int ClientID) = 0;
 
-	virtual const char *GameType() = 0;
-	virtual const char *Version() = 0;
-	virtual const char *NetVersion() = 0;
+	virtual const char *GameType() const = 0;
+	virtual const char *Version() const = 0;
+	virtual const char *NetVersion() const = 0;
 
 	// DDRace
 
 	virtual void OnSetAuthed(int ClientID, int Level) = 0;
+	virtual bool TimeScore() const { return false; }
+	/**
+	 * Used to report custom player info to master servers.
+	 *
+	 * @param pJsonWriter A pointer to a CJsonStringWriter which the custom data will be added to.
+	 * @param i The client id.
+	 */
+	virtual void OnUpdatePlayerServerInfo(class CJsonStringWriter *pJSonWriter, int Id) = 0;
 };
 
 extern IGameServer *CreateGameServer();

@@ -18,6 +18,7 @@
 #include <engine/shared/mapchecker.h>
 #include <engine/shared/econ.h>
 #include <engine/shared/netban.h>
+#include <engine/shared/http.h>
 
 class CSnapIDPool
 {
@@ -77,6 +78,8 @@ class CServer : public IServer
 	class IGameServer *m_pGameServer;
 	class IConsole *m_pConsole;
 	class IStorage *m_pStorage;
+	class IRegister *m_pRegister;
+
 public:
 	class IGameServer *GameServer() { return m_pGameServer; }
 	class IConsole *Console() { return m_pConsole; }
@@ -142,6 +145,11 @@ public:
 
 		const IConsole::CCommandInfo *m_pRconCmdToSend;
 
+		bool IncludedInServerInfo() const
+		{
+			return m_State != STATE_EMPTY;
+		}
+
 		void Reset();
 
 		// DDRace
@@ -158,6 +166,7 @@ public:
 	CNetServer m_NetServer;
 	CEcon m_Econ;
 	CServerBan m_ServerBan;
+	CHttp m_Http;
 
 	IEngineMap *m_pMap;
 
@@ -182,8 +191,6 @@ public:
 	int m_GeneratedRconPassword;
 
 	CDemoRecorder m_aDemoRecorder[MAX_CLIENTS+1];
-	CRegister m_Register;
-	CMapChecker m_MapChecker;
 
 	int m_RconRestrict;
 
@@ -192,6 +199,7 @@ public:
 	int m_ServerInfoNumRequests;
 	int64_t m_ServerInfoRequestLogTick;
 	int m_ServerInfoRequestLogRecords;
+	bool m_ServerInfoNeedsUpdate;
 
 	CServer();
 
@@ -249,8 +257,11 @@ public:
 	void ProcessClientPacket(CNetChunk *pPacket);
 
 	void SendServerInfoConnless(const NETADDR *pAddr, int Token, int Type);
+	void ExpireServerInfo() override;
+	void UpdateRegisterServerInfo();	
+
+	void UpdateServerInfo(bool Resend = false);
 	void SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool SendClients);
-	void UpdateServerInfo();
 
 	void PumpNetwork(bool PacketWaiting);
 
@@ -262,7 +273,7 @@ public:
 	void StopRecord(int ClientID);
 	bool IsRecording(int ClientID);
 
-	void InitRegister(CNetServer *pNetServer, IEngineMasterServer *pMasterServer, IConsole *pConsole);
+	void InitInterfaces(IKernel *pKernel);
 	int Run();
 
 	static void ConTestingCommands(IConsole::IResult *pResult, void *pUser);

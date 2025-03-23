@@ -46,7 +46,7 @@ void MGNinjaSurvival::End()
 
 		if (not Player) continue;
 		Player->SetInfoLock(false);
-		str_copy(Player->m_TeeInfos.m_SkinName, Player->original_skin, sizeof(Player->m_TeeInfos.m_SkinName));
+		str_copy(Player->m_TeeInfos.m_aSkinName, Player->original_skin, sizeof(Player->m_TeeInfos.m_aSkinName));
 
 		if (not Char) continue;
 		Char->SetHealth(10);

@@ -9,6 +9,8 @@
 #include <engine/console.h>
 #include <engine/shared/datafile.h>
 #include <engine/shared/linereader.h>
+#include <engine/shared/jsonwriter.h>
+#include <engine/shared/memheap.h>
 #include <engine/storage.h>
 #include "gamecontext.h"
 #include <game/version.h>
@@ -1006,7 +1008,7 @@ void CGameContext::OnClientEnter(int ClientID)
 		SendChat(-1, CGameContext::CHAT_ALL, aBuf);
 		
 		// for WarioWare
-		str_copy(m_apPlayers[ClientID]->original_skin, m_apPlayers[ClientID]->m_TeeInfos.m_SkinName, sizeof(m_apPlayers[ClientID]->original_skin));
+		str_copy(m_apPlayers[ClientID]->original_skin, m_apPlayers[ClientID]->m_TeeInfos.m_aSkinName, sizeof(m_apPlayers[ClientID]->original_skin));
 		m_apPlayers[ClientID]->original_color = m_apPlayers[ClientID]->m_TeeInfos.m_UseCustomColor;
 		m_apPlayers[ClientID]->original_body_color = m_apPlayers[ClientID]->m_TeeInfos.m_ColorBody;
 		SendChatTarget(ClientID, "TeeWare v1.1及以前 由Headshot制作");
@@ -1026,6 +1028,8 @@ void CGameContext::OnClientEnter(int ClientID)
 		SendVoteSet(ClientID);
 
 	m_apPlayers[ClientID]->m_Authed = ((CServer*)Server())->m_aClients[ClientID].m_Authed;
+
+	Server()->ExpireServerInfo();
 }
 
 void CGameContext::OnClientConnected(int ClientID)
@@ -1096,6 +1100,7 @@ void CGameContext::OnClientDrop(int ClientID, const char *pReason)
 		if(m_apPlayers[i] && m_apPlayers[i]->m_LastWhisperTo == ClientID)
 			m_apPlayers[i]->m_LastWhisperTo = -1;
 	}
+	Server()->ExpireServerInfo();
 }
 
 void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
@@ -1648,6 +1653,8 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			//tell known bot clients that they're botting and we know it
 			if (((Version >= 15 && Version < 100) || Version == 502) && g_Config.m_SvClientSuggestionBot[0] != '\0')
 				SendBroadcast(g_Config.m_SvClientSuggestionBot, ClientID);
+			Server()->ExpireServerInfo();
+			//GameController()->OnPlayerInfoChange(pPlayer);
 		}
 		else if (MsgID == NETMSGTYPE_CL_SHOWOTHERS)
 		{
@@ -1700,13 +1707,13 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			}
 			Server()->SetClientClan(ClientID, pMsg->m_pClan);
 			Server()->SetClientCountry(ClientID, pMsg->m_Country);
-			str_copy(pPlayer->m_TeeInfos.m_SkinName, pMsg->m_pSkin, sizeof(pPlayer->m_TeeInfos.m_SkinName));
+			str_copy(pPlayer->m_TeeInfos.m_aSkinName, pMsg->m_pSkin, sizeof(pPlayer->m_TeeInfos.m_aSkinName));
 			pPlayer->m_TeeInfos.m_UseCustomColor = pMsg->m_UseCustomColor;
 			pPlayer->m_TeeInfos.m_ColorBody = pMsg->m_ColorBody;
 			pPlayer->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
 			//m_pController->OnPlayerInfoChange(pPlayer);
 
-			str_copy(pPlayer->original_skin, pPlayer->m_TeeInfos.m_SkinName, sizeof(pPlayer->original_skin));
+			str_copy(pPlayer->original_skin, pPlayer->m_TeeInfos.m_aSkinName, sizeof(pPlayer->original_skin));
 			pPlayer->original_color = pPlayer->m_TeeInfos.m_UseCustomColor;
 			pPlayer->original_body_color = pPlayer->m_TeeInfos.m_ColorBody;
 		}
@@ -1809,7 +1816,7 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 		Server()->SetClientName(ClientID, pMsg->m_pName);
 		Server()->SetClientClan(ClientID, pMsg->m_pClan);
 		Server()->SetClientCountry(ClientID, pMsg->m_Country);
-		str_copy(pPlayer->m_TeeInfos.m_SkinName, pMsg->m_pSkin, sizeof(pPlayer->m_TeeInfos.m_SkinName));
+		str_copy(pPlayer->m_TeeInfos.m_aSkinName, pMsg->m_pSkin, sizeof(pPlayer->m_TeeInfos.m_aSkinName));
 		pPlayer->m_TeeInfos.m_UseCustomColor = pMsg->m_UseCustomColor;
 		pPlayer->m_TeeInfos.m_ColorBody = pMsg->m_ColorBody;
 		pPlayer->m_TeeInfos.m_ColorFeet = pMsg->m_ColorFeet;
@@ -1832,6 +1839,8 @@ void CGameContext::OnMessage(int MsgID, CUnpacker *pUnpacker, int ClientID)
 			CNetMsg_Sv_ReadyToEnter m;
 			Server()->SendPackMsg(&m, MSGFLAG_VITAL|MSGFLAG_FLUSH, ClientID);
 		}
+
+		Server()->ExpireServerInfo();
 	}
 }
 
@@ -2798,7 +2807,7 @@ void CGameContext::OnInit(/*class IKernel *pKernel*/)
 	m_apPlayers[MAX_CLIENTS-1]->SetTeam(TEAM_SPECTATORS, false);
 	m_apPlayers[MAX_CLIENTS-1]->setVoluntarySpectator(true);
 	Server()->SetClientName(MAX_CLIENTS-1, "bot");
-	str_copy(m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName, "itsabot", sizeof(m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName));
+	str_copy(m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_aSkinName, "itsabot", sizeof(m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_aSkinName));
 	str_copy(m_apPlayers[MAX_CLIENTS-1]->original_skin, "itsabot", sizeof(m_apPlayers[MAX_CLIENTS-1]->original_skin));
 	m_apPlayers[MAX_CLIENTS-1]->original_color = 0;
 	m_apPlayers[MAX_CLIENTS-1]->original_body_color = 0;
@@ -3031,9 +3040,9 @@ bool CGameContext::IsClientPlayer(int ClientID)
 	return m_apPlayers[ClientID] && m_apPlayers[ClientID]->GetTeam() == TEAM_SPECTATORS ? false : true;
 }
 
-const char *CGameContext::GameType() { return m_pController && m_pController->m_pGameType ? m_pController->m_pGameType : ""; }
-const char *CGameContext::Version() { return GAME_VERSION; }
-const char *CGameContext::NetVersion() { return GAME_NETVERSION; }
+const char *CGameContext::GameType() const { return m_pController && m_pController->m_pGameType ? m_pController->m_pGameType : ""; }
+const char *CGameContext::Version() const { return GAME_VERSION; }
+const char *CGameContext::NetVersion() const { return GAME_NETVERSION; }
 
 IGameServer *CreateGameServer() { return new CGameContext; }
 
@@ -3056,6 +3065,40 @@ void CGameContext::SendChatResponseAll(const char *pLine, void *pUser)
 	pSelf->SendChat(-1, CHAT_ALL, pLine);
 
 	ReentryGuard--;
+}
+
+void CGameContext::OnUpdatePlayerServerInfo(CJsonStringWriter *pJSonWriter, int Id)
+{
+	if(!m_apPlayers[Id])
+		return;
+
+	CTeeInfo &TeeInfo = m_apPlayers[Id]->m_TeeInfos;
+
+	pJSonWriter->WriteAttribute("skin");
+	pJSonWriter->BeginObject();
+
+	// 0.6
+	pJSonWriter->WriteAttribute("name");
+	pJSonWriter->WriteStrValue(TeeInfo.m_aSkinName);
+
+	if(TeeInfo.m_UseCustomColor)
+	{
+		pJSonWriter->WriteAttribute("color_body");
+		pJSonWriter->WriteIntValue(TeeInfo.m_ColorBody);
+
+		pJSonWriter->WriteAttribute("color_feet");
+		pJSonWriter->WriteIntValue(TeeInfo.m_ColorFeet);
+	}
+
+	pJSonWriter->EndObject();
+
+	pJSonWriter->WriteAttribute("afk");
+	pJSonWriter->WriteBoolValue(false);
+
+	const int Team = m_apPlayers[Id]->GetTeam() == TEAM_SPECTATORS ? -1 : GetDDRaceTeam(Id);
+
+	pJSonWriter->WriteAttribute("team");
+	pJSonWriter->WriteIntValue(Team);
 }
 
 void CGameContext::SendChatResponse(const char *pLine, void *pUser, bool Highlighted)

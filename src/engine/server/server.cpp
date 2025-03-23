@@ -7,7 +7,6 @@
 #include <engine/console.h>
 #include <engine/engine.h>
 #include <engine/map.h>
-#include <engine/masterserver.h>
 #include <engine/server.h>
 #include <engine/storage.h>
 
@@ -17,7 +16,8 @@
 #include <engine/shared/demo.h>
 #include <engine/shared/econ.h>
 #include <engine/shared/filecollection.h>
-#include <engine/shared/mapchecker.h>
+#include <engine/shared/jsonwriter.h>
+#include <mastersrv/mastersrv.h>
 #include <engine/shared/netban.h>
 #include <engine/shared/network.h>
 #include <engine/shared/packer.h>
@@ -34,7 +34,7 @@
 #include <game/server/gamecontext.h>
 
 // DDNet
-#include <engine/shared/uuid.h>
+#include <base/uuid.h>
 
 #include "register.h"
 #include "server.h"
@@ -324,12 +324,8 @@ CServer::CServer()
 	m_RconRestrict = -1;
 	m_GeneratedRconPassword = 0;
 
-	m_ServerInfoFirstRequest = 0;
-	m_ServerInfoNumRequests = 0;
-	m_ServerInfoHighLoad = false;
-
-	m_ServerInfoRequestLogTick = 0;
-	m_ServerInfoRequestLogRecords = 0;
+	m_ServerInfoNeedsUpdate = false;
+	m_pRegister = nullptr;
 
 	Init();
 }
@@ -411,6 +407,8 @@ void CServer::SetClientScore(int ClientID, int Score)
 {
 	if(ClientID < 0 || ClientID >= MAX_CLIENTS || (m_aClients[ClientID].m_State < CClient::STATE_READY and ClientID < MAX_CLIENTS-1))
 		return;
+	if(m_aClients[ClientID].m_Score != Score)
+		ExpireServerInfo();
 	m_aClients[ClientID].m_Score = Score;
 }
 
@@ -491,7 +489,7 @@ int CServer::GetClientInfo(int ClientID, CClientInfo *pInfo)
 		pInfo->m_pName = m_aClients[ClientID].m_aName;
 		pInfo->m_Latency = m_aClients[ClientID].m_Latency;
 		CGameContext *GameServer = (CGameContext *) m_pGameServer;
-		if (GameServer->m_apPlayers[ClientID])
+		if(GameServer->m_apPlayers[ClientID])
 			pInfo->m_ClientVersion = GameServer->m_apPlayers[ClientID]->m_ClientVersion;
 		return 1;
 	}
@@ -851,7 +849,7 @@ void CServer::SendMap(int ClientID)
 {
 	// DDNet message NETMSG_MAP_DETAILS
 	CMsgPacker MsgDDNet(0, true, false);
-	CUuid Uuid = CalculateUuid("map-details@ddnet.tw");
+	Uuid Uuid = CalculateUuid("map-details@ddnet.tw");
 	MsgDDNet.AddRaw(&Uuid, sizeof(Uuid));
 	MsgDDNet.AddString(GetMapName(), 0);
 	MsgDDNet.AddRaw(&m_CurrentMapSha256.data, sizeof(m_CurrentMapSha256.data));
@@ -1565,15 +1563,124 @@ void CServer::SendServerInfo(const NETADDR *pAddr, int Token, int Type, bool Sen
 	#undef ADD_INT
 }
 
-void CServer::UpdateServerInfo()
+void CServer::ExpireServerInfo()
 {
-	for(int i = 0; i < MAX_CLIENTS; ++i)
+	m_ServerInfoNeedsUpdate = true;
+}
+
+void CServer::UpdateRegisterServerInfo()
+{
+	// count the players
+	int PlayerCount = 0, ClientCount = 0;
+	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
-		if(m_aClients[i].m_State != CClient::STATE_EMPTY)
+		if(m_aClients[i].IncludedInServerInfo())
 		{
-			SendServerInfo(m_NetServer.ClientAddr(i), -1, SERVERINFO_INGAME, false);
+			if(GameServer()->IsClientPlayer(i))
+				PlayerCount++;
+
+			ClientCount++;
 		}
 	}
+
+	int MaxPlayers = max(m_NetServer.MaxClients(), PlayerCount);
+	int MaxClients = max(m_NetServer.MaxClients(), ClientCount);
+	char aMapSha256[SHA256_MAXSTRSIZE];
+
+	sha256_str(m_CurrentMapSha256, aMapSha256, sizeof(aMapSha256));
+
+	CJsonStringWriter JsonWriter;
+
+	JsonWriter.BeginObject();
+	JsonWriter.WriteAttribute("max_clients");
+	JsonWriter.WriteIntValue(MaxClients);
+
+	JsonWriter.WriteAttribute("max_players");
+	JsonWriter.WriteIntValue(MaxPlayers);
+
+	JsonWriter.WriteAttribute("passworded");
+	JsonWriter.WriteBoolValue(g_Config.m_Password[0]);
+
+	JsonWriter.WriteAttribute("game_type");
+	JsonWriter.WriteStrValue(GameServer()->GameType());
+
+	JsonWriter.WriteAttribute("name");
+	JsonWriter.WriteStrValue(g_Config.m_SvName);
+
+	JsonWriter.WriteAttribute("map");
+	JsonWriter.BeginObject();
+	JsonWriter.WriteAttribute("name");
+	JsonWriter.WriteStrValue(GetMapName());
+	JsonWriter.WriteAttribute("sha256");
+	JsonWriter.WriteStrValue(aMapSha256);
+	JsonWriter.WriteAttribute("size");
+	JsonWriter.WriteIntValue(m_CurrentMapSize);
+	JsonWriter.EndObject();
+
+	JsonWriter.WriteAttribute("version");
+	JsonWriter.WriteStrValue(GameServer()->Version());
+
+	JsonWriter.WriteAttribute("client_score_kind");
+	JsonWriter.WriteStrValue("points"); // "points" or "time"
+
+	JsonWriter.WriteAttribute("requires_login");
+	JsonWriter.WriteBoolValue(false);
+
+	JsonWriter.WriteAttribute("clients");
+	JsonWriter.BeginArray();
+
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		if(m_aClients[i].IncludedInServerInfo())
+		{
+			JsonWriter.BeginObject();
+
+			JsonWriter.WriteAttribute("name");
+			JsonWriter.WriteStrValue(ClientName(i));
+
+			JsonWriter.WriteAttribute("clan");
+			JsonWriter.WriteStrValue(ClientClan(i));
+
+			JsonWriter.WriteAttribute("country");
+			JsonWriter.WriteIntValue(m_aClients[i].m_Country); // ISO 3166-1 numeric
+
+			JsonWriter.WriteAttribute("score");
+			JsonWriter.WriteIntValue(m_aClients[i].m_Score);
+
+			JsonWriter.WriteAttribute("is_player");
+			JsonWriter.WriteBoolValue(GameServer()->IsClientPlayer(i));
+
+			GameServer()->OnUpdatePlayerServerInfo(&JsonWriter, i);
+
+			JsonWriter.EndObject();
+		}
+	}
+
+	JsonWriter.EndArray();
+	JsonWriter.EndObject();
+
+	m_pRegister->OnNewInfo(JsonWriter.GetOutputString().c_str());
+}
+
+void CServer::UpdateServerInfo(bool Resend)
+{
+	if(!m_pRegister || m_RunServer == false)
+		return;
+
+	UpdateRegisterServerInfo();
+
+	if(Resend)
+	{
+		for(int i = 0; i < m_NetServer.MaxClients(); ++i)
+		{
+			if(m_aClients[i].m_State != CClient::STATE_EMPTY)
+			{
+				SendServerInfo(m_NetServer.ClientAddr(i), -1, SERVERINFO_INGAME, false);
+			}
+		}
+	}
+
+	m_ServerInfoNeedsUpdate = false;
 }
 
 void CServer::PumpNetwork(bool PacketWaiting)
@@ -1588,35 +1695,35 @@ void CServer::PumpNetwork(bool PacketWaiting)
 		// process packets
 		while(m_NetServer.Recv(&Packet, &ResponseToken))
 		{
-			if(Packet.m_ClientID == -1)
+			if(ResponseToken == NET_SECURITY_TOKEN_UNKNOWN && m_pRegister->OnPacket(&Packet))
+				continue;
+			if(Packet.m_DataSize >= int(sizeof(SERVERBROWSE_GETINFO)) &&
+				mem_comp(Packet.m_pData, SERVERBROWSE_GETINFO, sizeof(SERVERBROWSE_GETINFO)) == 0)
 			{
 				// stateless
-				if(!m_Register.RegisterProcessPacket(&Packet))
+				int ExtraToken = 0;
+				int Type = -1;
+				if(Packet.m_DataSize >= (int)sizeof(SERVERBROWSE_GETINFO) + 1 &&
+					mem_comp(Packet.m_pData, SERVERBROWSE_GETINFO, sizeof(SERVERBROWSE_GETINFO)) == 0)
 				{
-					int ExtraToken = 0;
-					int Type = -1;
-					if(Packet.m_DataSize >= (int)sizeof(SERVERBROWSE_GETINFO) + 1 &&
-						mem_comp(Packet.m_pData, SERVERBROWSE_GETINFO, sizeof(SERVERBROWSE_GETINFO)) == 0)
+					if(Packet.m_Flags & NETSENDFLAG_EXTENDED)
 					{
-						if(Packet.m_Flags & NETSENDFLAG_EXTENDED)
-						{
-							Type = SERVERINFO_EXTENDED;
-							ExtraToken = (Packet.m_aExtraData[0] << 8) | Packet.m_aExtraData[1];
-						}
-						else
-							Type = SERVERINFO_VANILLA;
+						Type = SERVERINFO_EXTENDED;
+						ExtraToken = (Packet.m_aExtraData[0] << 8) | Packet.m_aExtraData[1];
 					}
-					else if(Packet.m_DataSize >= (int)sizeof(SERVERBROWSE_GETINFO_64_LEGACY) + 1 &&
-							mem_comp(Packet.m_pData, SERVERBROWSE_GETINFO_64_LEGACY, sizeof(SERVERBROWSE_GETINFO_64_LEGACY)) == 0)
-					{
-						Type = SERVERINFO_64_LEGACY;
-					}
-					if(Type != -1)
-					{
-						int Token = ((unsigned char *)Packet.m_pData)[sizeof(SERVERBROWSE_GETINFO)];
-						Token |= ExtraToken << 8;
-						SendServerInfoConnless(&Packet.m_Address, Token, Type);
-					}
+					else
+						Type = SERVERINFO_VANILLA;
+				}
+				else if(Packet.m_DataSize >= (int)sizeof(SERVERBROWSE_GETINFO_64_LEGACY) + 1 &&
+						mem_comp(Packet.m_pData, SERVERBROWSE_GETINFO_64_LEGACY, sizeof(SERVERBROWSE_GETINFO_64_LEGACY)) == 0)
+				{
+					Type = SERVERINFO_64_LEGACY;
+				}
+				if(Type != -1)
+				{
+					int Token = ((unsigned char *)Packet.m_pData)[sizeof(SERVERBROWSE_GETINFO)];
+					Token |= ExtraToken << 8;
+					SendServerInfoConnless(&Packet.m_Address, Token, Type);
 				}
 			}
 			else
@@ -1650,13 +1757,6 @@ int CServer::LoadMap(const char *pMapName)
 	/*df = datafile_load(buf);
 	if(!df)
 		return 0;*/
-
-	// check for valid standard map
-	if(!m_MapChecker.ReadAndValidateMap(Storage(), aBuf, IStorage::TYPE_ALL))
-	{
-		Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "mapchecker", "invalid standard map");
-		return 0;
-	}
 
 	if(!m_pMap->Load(aBuf))
 		return 0;
@@ -1709,9 +1809,13 @@ int CServer::LoadMap(const char *pMapName)
 	return 1;
 }
 
-void CServer::InitRegister(CNetServer *pNetServer, IEngineMasterServer *pMasterServer, IConsole *pConsole)
+void CServer::InitInterfaces(IKernel *pKernel)
 {
-	m_Register.Init(pNetServer, pMasterServer, pConsole);
+	m_pConsole = pKernel->RequestInterface<IConsole>();
+	m_pGameServer = pKernel->RequestInterface<IGameServer>();
+	m_pMap = pKernel->RequestInterface<IEngineMap>();
+	m_pStorage = pKernel->RequestInterface<IStorage>();
+	Kernel()->RegisterInterface(static_cast<IHttp *>(&m_Http));
 }
 
 int CServer::Run()
@@ -1749,6 +1853,13 @@ int CServer::Run()
 
 	m_NetServer.SetCallbacks(NewClientCallback, NewClientNoAuthCallback, ClientRejoinCallback, DelClientCallback, this);
 
+	if(!m_Http.Init(std::chrono::seconds{2}, &g_Config))
+	{
+		dbg_msg("server", "Failed to initialize the HTTP client.");
+		return -1;
+	}
+
+	m_pRegister = CreateRegister(&g_Config, m_pConsole, Kernel()->RequestInterface<IEngine>(), &m_Http, g_Config.m_SvPort, NET_SECURITY_TOKEN_UNSUPPORTED);
 	m_Econ.Init(Console(), &m_ServerBan);
 
 	char aBuf[256];
@@ -1761,6 +1872,7 @@ int CServer::Run()
 
 	// process pending commands
 	m_pConsole->StoreCommands(false);
+	m_pRegister->OnConfigChange();
 
 	if(m_GeneratedRconPassword)
 	{
@@ -1777,6 +1889,7 @@ int CServer::Run()
 		m_Lastheartbeat = 0;
 		m_GameStartTime = time_get();
 
+		UpdateServerInfo();
 		while(m_RunServer)
 		{
 			if(NonActive)
@@ -1813,7 +1926,7 @@ int CServer::Run()
 					m_ServerInfoFirstRequest = 0;
 					Kernel()->ReregisterInterface(GameServer());
 					GameServer()->OnInit();
-					UpdateServerInfo();
+					UpdateServerInfo(true);
 				}
 				else
 				{
@@ -1856,10 +1969,13 @@ int CServer::Run()
 					DoSnapshot();
 
 				UpdateClientRconCommands();
-			}
 
-			// master server stuff
-			m_Register.RegisterUpdate(m_NetServer.NetType());
+				// master server stuff
+				m_pRegister->Update();
+
+				if(m_ServerInfoNeedsUpdate)
+					UpdateServerInfo();
+			}
 
 			if(!NonActive)
 				PumpNetwork(PacketWaiting);
@@ -1911,30 +2027,37 @@ int CServer::Run()
 	{
 		if(m_aClients[i].m_State != CClient::STATE_EMPTY)
 			m_NetServer.Drop(i, "Server shutdown");
-
-		m_Econ.Shutdown();
 	}
+	m_NetServer.Close();
+	m_pRegister->OnShutdown();
+	m_Econ.Shutdown();
+	m_Http.Shutdown();
 
 	GameServer()->OnShutdown();
 	m_pMap->Unload();
+
+	if(m_pRegister)
+	{
+		delete m_pRegister;
+	}
 
 	if(m_pCurrentMapData)
 		mem_free(m_pCurrentMapData);
 	return 0;
 }
 
-void CServer::ConTestingCommands(CConsole::IResult *pResult, void *pUser)
+void CServer::ConTestingCommands(IConsole::IResult *pResult, void *pUser)
 {
 	char aBuf[128];
 	str_format(aBuf, sizeof(aBuf), "Value: %d", g_Config.m_SvTestingCommands);
-	((CConsole*)pUser)->Print(CConsole::OUTPUT_LEVEL_STANDARD, "console", aBuf);
+	((IConsole*)pUser)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "console", aBuf);
 }
 
-void CServer::ConRescue(CConsole::IResult *pResult, void *pUser)
+void CServer::ConRescue(IConsole::IResult *pResult, void *pUser)
 {
 	char aBuf[128];
 	str_format(aBuf, sizeof(aBuf), "Value: %d", g_Config.m_SvRescue);
-	((CConsole*)pUser)->Print(CConsole::OUTPUT_LEVEL_STANDARD, "console", aBuf);
+	((IConsole*)pUser)->Print(IConsole::OUTPUT_LEVEL_STANDARD, "console", aBuf);
 }
 
 void CServer::ConKick(IConsole::IResult *pResult, void *pUser)
@@ -2294,11 +2417,8 @@ int main(int argc, const char **argv) // ignore_convention
 	IEngineMap *pEngineMap = CreateEngineMap();
 	IGameServer *pGameServer = CreateGameServer();
 	IConsole *pConsole = CreateConsole(CFGFLAG_SERVER|CFGFLAG_ECON);
-	IEngineMasterServer *pEngineMasterServer = CreateEngineMasterServer();
 	IStorage *pStorage = CreateStorage("Teeworlds", IStorage::STORAGETYPE_SERVER, argc, argv); // ignore_convention
 	IConfig *pConfig = CreateConfig();
-
-	pServer->InitRegister(&pServer->m_NetServer, pEngineMasterServer, pConsole);
 
 	{
 		bool RegisterFail = false;
@@ -2311,8 +2431,6 @@ int main(int argc, const char **argv) // ignore_convention
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pConsole);
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pStorage);
 		RegisterFail = RegisterFail || !pKernel->RegisterInterface(pConfig);
-		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IEngineMasterServer*>(pEngineMasterServer)); // register as both
-		RegisterFail = RegisterFail || !pKernel->RegisterInterface(static_cast<IMasterServer*>(pEngineMasterServer));
 
 		if(RegisterFail)
 			return -1;
@@ -2320,9 +2438,8 @@ int main(int argc, const char **argv) // ignore_convention
 
 	pEngine->Init();
 	pConfig->Init();
-	pEngineMasterServer->Init();
-	pEngineMasterServer->Load();
 
+	pServer->InitInterfaces(pKernel);
 	// register all console commands
 	pServer->RegisterCommands();
 
@@ -2365,7 +2482,6 @@ int main(int argc, const char **argv) // ignore_convention
 	delete pEngineMap;
 	delete pGameServer;
 	delete pConsole;
-	delete pEngineMasterServer;
 	delete pStorage;
 	delete pConfig;
 	return 0;
@@ -2436,7 +2552,7 @@ enum
 void CServer::SendCapabilities(int ClientID)
 {
 	CMsgPacker Msg(0, true, false);
-	CUuid Uuid = CalculateUuid("capabilities@ddnet.tw");
+	Uuid Uuid = CalculateUuid("capabilities@ddnet.tw");
     Msg.AddRaw(&Uuid, sizeof(Uuid));
 	Msg.AddInt(SERVERCAP_CURVERSION); // version
 	Msg.AddInt(SERVERCAPFLAG_DDNET); // flags no dummy

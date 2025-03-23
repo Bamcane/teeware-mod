@@ -17,7 +17,7 @@ void MGKamikaze::Start()
 
 	// change their skin to a bomb
 	CPlayer *pKamikaze = GameServer()->m_apPlayers[m_Victim];
-	str_copy(pKamikaze->m_TeeInfos.m_SkinName, "bomb", sizeof(pKamikaze->m_TeeInfos.m_SkinName));
+	str_copy(pKamikaze->m_TeeInfos.m_aSkinName, "bomb", sizeof(pKamikaze->m_TeeInfos.m_aSkinName));
 	pKamikaze->m_TeeInfos.m_UseCustomColor = 0;
 
 	// count online players and send broadcast
@@ -32,8 +32,8 @@ void MGKamikaze::Start()
 
 		if (i != m_Victim)
 		{
-			if (str_comp(pPlayer->m_TeeInfos.m_SkinName, "bomb") == 0) // remove fake
-				str_copy(pPlayer->m_TeeInfos.m_SkinName, "default", sizeof(pPlayer->m_TeeInfos.m_SkinName));
+			if (str_comp(pPlayer->m_TeeInfos.m_aSkinName, "bomb") == 0) // remove fake
+				str_copy(pPlayer->m_TeeInfos.m_aSkinName, "default", sizeof(pPlayer->m_TeeInfos.m_aSkinName));
 
 			Controller()->g_Complete[i] = true;
 			GameServer()->SendBroadcast("远离炸弹人!", i);
@@ -57,7 +57,7 @@ void MGKamikaze::End()
 		if (Player) // revert skin
 		{
 			Player->SetInfoLock(false);
-			str_copy(Player->m_TeeInfos.m_SkinName, Player->original_skin, sizeof(Player->m_TeeInfos.m_SkinName));
+			str_copy(Player->m_TeeInfos.m_aSkinName, Player->original_skin, sizeof(Player->m_TeeInfos.m_aSkinName));
 			Player->m_TeeInfos.m_UseCustomColor = Player->original_color;
 		}
 	}

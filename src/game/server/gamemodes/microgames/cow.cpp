@@ -18,8 +18,8 @@ void MGHitCow::Start()
 		if (not Char) continue;
 
 		Player->SetInfoLock(true); // prevent skin change
-		if (str_comp(Player->m_TeeInfos.m_SkinName, "giraffe") == 0) // remove fake
-			str_copy(Player->m_TeeInfos.m_SkinName, "default", sizeof(Player->m_TeeInfos.m_SkinName));
+		if (str_comp(Player->m_TeeInfos.m_aSkinName, "giraffe") == 0) // remove fake
+			str_copy(Player->m_TeeInfos.m_aSkinName, "default", sizeof(Player->m_TeeInfos.m_aSkinName));
 		if (str_comp_nocase(Server()->ClientName(i), "奶牛") == 0) // remove fake
 			Server()->SetClientName(i, "假的");
 
@@ -34,7 +34,7 @@ void MGHitCow::Start()
 	Server()->SetClientName(MAX_CLIENTS-1, "奶牛");
 	
 	// moo skin
-	str_copy(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName, "giraffe", sizeof(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName));
+	str_copy(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_aSkinName, "giraffe", sizeof(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_aSkinName));
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_UseCustomColor = 1;
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_ColorBody = 194;
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_ColorFeet = 9801403;
@@ -55,7 +55,7 @@ void MGHitCow::End()
 
 		if (not Player) continue;
 		Player->SetInfoLock(false);
-		str_copy(Player->m_TeeInfos.m_SkinName, Player->original_skin, sizeof(Player->m_TeeInfos.m_SkinName));
+		str_copy(Player->m_TeeInfos.m_aSkinName, Player->original_skin, sizeof(Player->m_TeeInfos.m_aSkinName));
 
 		if (not Char) continue;
 		Controller()->teleportPlayerToSpawn(i);
@@ -63,7 +63,7 @@ void MGHitCow::End()
 
 	// move bot back to spec
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->SetTeam(TEAM_SPECTATORS, false);
-	str_copy(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName, "itsabot", sizeof(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_SkinName));
+	str_copy(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_aSkinName, "itsabot", sizeof(GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_aSkinName));
 	GameServer()->m_apPlayers[MAX_CLIENTS-1]->m_TeeInfos.m_UseCustomColor = 0;
 	Server()->SetClientName(MAX_CLIENTS-1, "bot");
 }
