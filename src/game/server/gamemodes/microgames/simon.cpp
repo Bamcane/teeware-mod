@@ -3,17 +3,17 @@
 #include <engine/shared/config.h>
 #include "simon.h"
 
-const char *simonNames[] = {"大鬼", "小鬼"};
+const char *simonNames[] = {"Miku", "Teto"};
 const char *simonModes[2][4] = {
 	{"跳", "看头上", "看下面", "锤别人"},
-	{"别跳", "别看头上", "别看下面", "不要锤别人"}
+	{"别跳", "别看头上", "别看下面", "别锤别人"}
 };
 const float PI = 3.141592653589793f;
 
 
 MGSimon::MGSimon(CGameContext* pGameServer, CGameControllerWarioWare* pController) : Microgame(pGameServer, pController)
 {
-	m_microgameName = "大鬼";
+	m_microgameName = "不要相信T氏的话";
 	m_boss = false;
 }
 
@@ -66,9 +66,9 @@ void MGSimon::Tick()
 				{
 					Controller()->killAndLoseMicroGame(i);
 					if (m_Someone)
-						GameServer()->SendChatTarget(i, "小鬼说的不能信!...");
+						GameServer()->SendChatTarget(i, "不要相信T氏的话!...");
 					else
-						GameServer()->SendChatTarget(i, "大鬼说不能!...");
+						GameServer()->SendChatTarget(i, "公主殿下说不能!...");
 				}
 				else
 				{
@@ -84,7 +84,7 @@ void MGSimon::Tick()
 				if (!objective and !m_SomeoneDontJump[i] && !m_SomeoneDontHammer[i]) {
 					Controller()->killAndLoseMicroGame(i);
 					if (m_Someone)
-						GameServer()->SendChatTarget(i, "小鬼说的不能信!...");
+						GameServer()->SendChatTarget(i, "不要相信T氏的话!...");
 				}
 			}
 		}
@@ -107,8 +107,8 @@ void MGSimon::OnCharacterDamage(int Victim, int Killer, int Dmg, int Weapon)
 	{
 		Controller()->killAndLoseMicroGame(Killer);
 		if (m_Someone)
-			GameServer()->SendChatTarget(Killer, "小鬼说的不能信!...");
+			GameServer()->SendChatTarget(Killer, "不要相信T氏的话!...");
 		else
-			GameServer()->SendChatTarget(Killer, "大鬼说不能!...");
+			GameServer()->SendChatTarget(Killer, "公主殿下说不能!...");
 	}
 }
