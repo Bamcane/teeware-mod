@@ -2555,6 +2555,6 @@ void CServer::SendCapabilities(int ClientID)
 	Uuid Uuid = CalculateUuid("capabilities@ddnet.tw");
     Msg.AddRaw(&Uuid, sizeof(Uuid));
 	Msg.AddInt(SERVERCAP_CURVERSION); // version
-	Msg.AddInt(SERVERCAPFLAG_DDNET); // flags no dummy
+	Msg.AddInt(SERVERCAPFLAG_DDNET | SERVERCAPFLAG_ALLOWDUMMY); // flags no dummy
 	SendMsg(&Msg, MSGFLAG_VITAL|MSGFLAG_NORECORD, ClientID);
 }

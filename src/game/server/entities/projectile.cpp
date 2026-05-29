@@ -311,7 +311,7 @@ void CProjectile::Tick()
 		GameServer()->m_World.DestroyEntity(this);
 	}
 	bool isMGTarget = false;
-	if (controller->inMicroGame() and str_comp(controller->getMicroGame()->m_microgameName, "目标") == 0)
+	if (controller->inMicroGame() and (str_comp(controller->getMicroGame()->m_microgameName, "目标") == 0 or str_comp(controller->getMicroGame()->m_microgameName, "击退忍者") == 0))
 		isMGTarget = true;
 
 	if( ((pTargetChr && (pOwnerChar ? (isMGTarget && pTargetChr->GetPlayer()->GetCID() == MAX_CLIENTS - 1) || !(pOwnerChar->m_Hit&CCharacter::DISABLE_HIT_GRENADE) : g_Config.m_SvHit || m_Owner == -1 || pTargetChr == pOwnerChar)) || Collide || GameLayerClipped(CurPos)) && !isWeaponCollide)
